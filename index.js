@@ -4,7 +4,7 @@ import dotenv from "dotenv"
 import cors from "cors"
 import { Error } from "./middleware/error.js"
 import cookieParser from "cookie-parser"
-import cloudinary from "cloudinary"
+// import cloudinary from "cloudinary"
 import bodyParser from "body-parser"
 import fileUpload from "express-fileupload"
 import reportRoutes from "./routes/ReportRoutes.js"
@@ -71,11 +71,11 @@ mongoose.connect(DB_MONGOOSE)
     )
 //catch hta diya kyu ki ab humne unhandled error kar liya
 
-cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET
-})
+// cloudinary.config({
+//     cloud_name: process.env.CLOUDINARY_NAME,
+//     api_key: process.env.CLOUDINARY_API_KEY,
+//     api_secret: process.env.CLOUDINARY_API_SECRET
+// })
 
 
 
