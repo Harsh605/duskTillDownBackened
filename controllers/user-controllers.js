@@ -5,7 +5,7 @@ import sendToken from "../utils/sendJwtToken.js"
 // import sendEmail from "../utils/sendEmail.js"
 import crypto from "crypto"
 import cloudinary from "cloudinary"
-import mysqlConnection from "../utils/mySqlConfig.js"
+// import mysqlConnection from "../utils/mySqlConfig.js"
 
 export const userRegistration = catchAsyncError(async (req, res, next) => {
     const { email, password, name, rank } = req.body
