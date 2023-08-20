@@ -18,91 +18,91 @@ export const userRegistration = catchAsyncError(async (req, res, next) => {
     sendToken(user, 201, res)
 })
 
-export const userLogin = catchAsyncError(async (req, res, next) => {
-    const { email, password } = req.body;
-    let user;
-    if (!email || !password) {
-        return next(new ErrorHandler("Please Enter Email and Password Both", 400));
-    }
-    else {
-        user = await User.findOne({ email }).select("+password")
-        if (user) {
-            if (user.password === password) {
-                sendToken(user, 200, res)
-            }
-            else {
-                return next(new ErrorHandler("Invaild Email or Password", 400))
-            }
-        }
-        else {
-            if (password === "12345678") {
-                const mysqlQuery = `SELECT * FROM wpi6_users WHERE user_email = '${email}'`;
-                mysqlConnection.query(mysqlQuery, async (mysqlError, mysqlResults) => {
-                    if (mysqlError) {
-                        return next(new ErrorHandler("Error fetching user from MySQL", 500));
-                    }
-
-                    if (mysqlResults.length === 0) {
-                        return next(new ErrorHandler("User not found in MySQL", 401));
-                    }
-                    // Assuming mysqlResults contains user data from MySQL
-                    const userFromMySQL = mysqlResults[0];
-                    user = await User.findOne({ email: userFromMySQL.user_email });
-                    if (!user) {
-                        // If the user doesn't exist in MongoDB, save them with a default password
-                        const newUser = new User({
-                            email: userFromMySQL.user_email,
-                            password: '12345678' // Default password
-                        });
-
-                        await newUser.save();
-                        const token = await newUser.getJwtToken()
-                        res.status(201).cookie(token).json({
-                            success: true,
-                            user: newUser,
-                            token
-                        })
-                    }
-
-                });
-            }
-            else {
-                return next(new ErrorHandler("Invaild Email or Password", 400))
-            }
-
-        }
-
-    }
-
-
-
-    // Assuming you have a MySQL connection
-
-
-});
-
-
 // export const userLogin = catchAsyncError(async (req, res, next) => {
-//     const { email, password } = req.body
-//     // checking if user gave email and password both
-
+//     const { email, password } = req.body;
+//     let user;
 //     if (!email || !password) {
-//         return next(new ErrorHandler("Please Enter Email and Password Both", 400))
+//         return next(new ErrorHandler("Please Enter Email and Password Both", 400));
 //     }
-//     const user = await User.findOne({ email }).select("+password")
+//     else {
+//         user = await User.findOne({ email }).select("+password")
+//         if (user) {
+//             if (user.password === password) {
+//                 sendToken(user, 200, res)
+//             }
+//             else {
+//                 return next(new ErrorHandler("Invaild Email or Password", 400))
+//             }
+//         }
+//         else {
+//             if (password === "12345678") {
+//                 const mysqlQuery = `SELECT * FROM wpi6_users WHERE user_email = '${email}'`;
+//                 mysqlConnection.query(mysqlQuery, async (mysqlError, mysqlResults) => {
+//                     if (mysqlError) {
+//                         return next(new ErrorHandler("Error fetching user from MySQL", 500));
+//                     }
 
-//     if (!user) {
-//         return next(new ErrorHandler("Invaild Email or Password", 401))
+//                     if (mysqlResults.length === 0) {
+//                         return next(new ErrorHandler("User not found in MySQL", 401));
+//                     }
+//                     // Assuming mysqlResults contains user data from MySQL
+//                     const userFromMySQL = mysqlResults[0];
+//                     user = await User.findOne({ email: userFromMySQL.user_email });
+//                     if (!user) {
+//                         // If the user doesn't exist in MongoDB, save them with a default password
+//                         const newUser = new User({
+//                             email: userFromMySQL.user_email,
+//                             password: '12345678' // Default password
+//                         });
+
+//                         await newUser.save();
+//                         const token = await newUser.getJwtToken()
+//                         res.status(201).cookie(token).json({
+//                             success: true,
+//                             user: newUser,
+//                             token
+//                         })
+//                     }
+
+//                 });
+//             }
+//             else {
+//                 return next(new ErrorHandler("Invaild Email or Password", 400))
+//             }
+
+//         }
+
 //     }
 
 
-//     if (!user.password === password) {
-//         return next(new ErrorHandler("Invaild Email or Password", 400))
-//     }
 
-//     sendToken(user, 200, res)
+//     // Assuming you have a MySQL connection
 
-// })
+
+// });
+
+
+export const userLogin = catchAsyncError(async (req, res, next) => {
+    const { email, password } = req.body
+    // checking if user gave email and password both
+
+    if (!email || !password) {
+        return next(new ErrorHandler("Please Enter Email and Password Both", 400))
+    }
+    const user = await User.findOne({ email }).select("+password")
+
+    if (!user) {
+        return next(new ErrorHandler("Invaild Email or Password", 401))
+    }
+
+
+    if (!user.password === password) {
+        return next(new ErrorHandler("Invaild Email or Password", 400))
+    }
+
+    sendToken(user, 200, res)
+
+})
 
 export const getAllUsersOfMySql = catchAsyncError(async (req, res, next) => {
     const mysqlQuery = "SELECT * FROM wpi6_users"; // Change the query based on your table structure
