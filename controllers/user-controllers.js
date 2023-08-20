@@ -4,7 +4,7 @@ import { catchAsyncError } from "../middleware/catchAsyncError.js"
 import sendToken from "../utils/sendJwtToken.js"
 // import sendEmail from "../utils/sendEmail.js"
 import crypto from "crypto"
-import cloudinary from "cloudinary"
+// import cloudinary from "cloudinary"
 // import mysqlConnection from "../utils/mySqlConfig.js"
 
 export const userRegistration = catchAsyncError(async (req, res, next) => {
