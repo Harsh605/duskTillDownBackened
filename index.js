@@ -35,8 +35,7 @@ const DB_MONGOOSE = process.env.MONGODB_URI
 const PORT = process.env.PORT
 
 app.use(cors({
-    origin: "https://analytical.metablocktechnologies.io",
-    origin: "https://dusk-till-down-frontened-q18qk4p1b-harsh605.vercel.app",
+    origin: "https://dusk-till-down-frontened.vercel.app",
     // credentials: true,
 }))
 app.use(express.json({
