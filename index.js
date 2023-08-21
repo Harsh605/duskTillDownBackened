@@ -36,7 +36,7 @@ const PORT = process.env.PORT
 
 app.use(cors({
     origin: "https://dusk-till-down-frontened.vercel.app",
-    // credentials: true,
+    credentials: true,
 }))
 app.use(express.json({
     limit: '50mb'
