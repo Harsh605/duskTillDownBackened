@@ -31,7 +31,7 @@ process.on("uncaughtException", (err) => {
 })
 
 const app = express()
-const DB_MONGOOSE = process.env.DB_MONGOOSE
+const DB_MONGOOSE = process.env.MONGODB_URI
 const PORT = process.env.PORT
 
 app.use(cors({
