@@ -37,7 +37,7 @@ const PORT = process.env.PORT
 app.use(cors({
     origin: "https://analytical.metablocktechnologies.io",
     origin: "https://dusk-till-down-frontened-q18qk4p1b-harsh605.vercel.app",
-    credentials: true,
+    // credentials: true,
 }))
 app.use(express.json({
     limit: '50mb'
