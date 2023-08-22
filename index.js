@@ -35,7 +35,11 @@ const DB_MONGOOSE = process.env.MONGODB_URI
 const PORT = process.env.PORT
 
 app.use(cors({
-    origin: "*",
+    origin: function (origin, callback) {
+        // Check if the origin is allowed
+        // For now, allowing any origin, you can enhance this logic
+        callback(null, true);
+    },
     methods: 'PUT, POST, PATCH, DELETE, GET',
     credentials: true,
 }))
