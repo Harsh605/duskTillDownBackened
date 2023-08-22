@@ -36,6 +36,8 @@ const PORT = process.env.PORT
 
 app.use(cors({
     origin: "https://dusk-till-down-frontened.vercel.app",
+    origin: "https://dusk-till-down-frontened.vercel.app/user/dashboard",
+    origin: "https://dusk-till-down-frontened.vercel.app/admin/dashboard",
     credentials: true,
 }))
 app.use(express.json({
