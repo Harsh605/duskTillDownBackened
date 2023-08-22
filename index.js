@@ -42,26 +42,26 @@ app.use(express.json({
     limit: '50mb'
 }))
 
-app.use(
-    session({
-        secret: "abcdefgh",
-        resave: true,
-        saveUninitialized: true,
-    })
-);
-
-
 // app.use(
 //     session({
 //         secret: "abcdefgh",
 //         resave: true,
 //         saveUninitialized: true,
-//         cookie: {
-//             secure: true, // Set this to true when using HTTPS
-//             sameSite: "none", // Adjust this based on your requirements
-//         },
 //     })
 // );
+
+
+app.use(
+    session({
+        secret: "abcdefgh",
+        resave: true,
+        saveUninitialized: true,
+        cookie: {
+            secure: true, // Set this to true when using HTTPS
+            sameSite: "none", // Adjust this based on your requirements
+        },
+    })
+);
 
 app.use(passport.initialize());
 app.use(passport.session());
