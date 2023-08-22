@@ -35,7 +35,7 @@ const DB_MONGOOSE = process.env.MONGODB_URI
 const PORT = process.env.PORT
 
 app.use(cors({
-    origin: process.env.client_url
+    origin: "https://dusk-till-down-frontened.vercel.app"
     methods: 'PUT, POST, PATCH, DELETE, GET',
     credentials: true,
 }))
