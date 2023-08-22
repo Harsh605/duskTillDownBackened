@@ -44,6 +44,7 @@ app.use(express.json({
 }))
 
 
+app.use(cookieParser())
 
 app.use(
     session({
@@ -52,7 +53,7 @@ app.use(
         saveUninitialized: true,
         cookie: {
             secure: true, // Set this to true when using HTTPS
-            SameSite: "none", // Adjust this based on your requirements
+            sameSite: "none", // Adjust this based on your requirements
         },
     })
 );
@@ -62,7 +63,6 @@ app.use(passport.session());
 
 
 
-app.use(cookieParser())
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json());
 app.use(fileUpload())
