@@ -63,8 +63,8 @@ app.use(passport.session());
 
 
 
-app.use(bodyParser.urlencoded({ extended: true,limit:'50mb }))
-app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.urlencoded({ extended: true }))
+app.use(bodyParser.json());
 app.use(fileUpload())
 app.use("/api/v1", reportRoutes)
 app.use("/api/v1", userRoutes)
