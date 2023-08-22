@@ -35,11 +35,7 @@ const DB_MONGOOSE = process.env.MONGODB_URI
 const PORT = process.env.PORT
 
 app.use(cors({
-    origin: function (origin, callback) {
-        // Check if the origin is allowed
-        // For now, allowing any origin, you can enhance this logic
-        callback(null, true);
-    },
+    origin: "https://dusk-till-down-frontened.vercel.app"
     methods: 'PUT, POST, PATCH, DELETE, GET',
     credentials: true,
 }))
