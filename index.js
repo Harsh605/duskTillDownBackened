@@ -36,6 +36,7 @@ const PORT = process.env.PORT
 
 app.use(cors({
     origin: "https://the-analytical-advantage.vercel.app",
+     methods: 'PUT, POST, PATCH, DELETE, GET',
     credentials: true,
 }))
 app.use(express.json({
