@@ -35,7 +35,7 @@ const DB_MONGOOSE = process.env.MONGODB_URI
 const PORT = process.env.PORT
 
 app.use(cors({
-    origin: "http://localhost:3000",
+    origin: "https://the-analytical-advantage.vercel.app",
     credentials: true,
 }))
 app.use(express.json({
