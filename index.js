@@ -35,8 +35,7 @@ const DB_MONGOOSE = process.env.MONGODB_URI
 const PORT = process.env.PORT
 
 app.use(cors({
-    origin: "https://dusk-till-down-frontened.vercel.app",
-    methods: 'PUT, POST, PATCH, DELETE, GET',
+    origin: "http://localhost:3000",
     credentials: true,
 }))
 app.use(express.json({
@@ -48,13 +47,9 @@ app.use(cookieParser())
 
 app.use(
     session({
-        secret: "abcdefgh",
+        secret: "your-secret-key",
         resave: true,
         saveUninitialized: true,
-        cookie: {
-            secure: true, // Set this to true when using HTTPS
-            sameSite: "None", // Adjust this based on your requirements
-        },
     })
 );
 

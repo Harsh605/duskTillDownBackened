@@ -26,14 +26,6 @@ const filterData = (data, month) => {
     });
 };
 
-
-const totalOrders = (data) => {
-    // Filter the data to include only rows where PV is a valid number and not 0
-    return data.filter((row) => parseInt(row.PersonalVolume, 10) > 0);
-};
-
-
-
 const filterDataForCcReport = (data, month) => {
     const currentMonth = month;
     const previousMonth = currentMonth === 1 ? 12 : currentMonth - 1;
@@ -155,14 +147,111 @@ const calculateLevel1Legs = (data) => {
 // End Points par Leg
 
 // Start Fully CompressedPoints(CurrentMonth) and for lastMoth it is Average Compression Bonus..........................................
+// const calculateFullyCompressedPoints = (data) => {
+//     let fullyCompressedPts = 0;
+//     let pointsGainedThisMonthWithoutSubscription = 0;
+//     let newVipsTotal = 0
+//     let pointsFromNewVips = 0
+//     let ptsWorthForRetention = {};
+
+//     let recordedThisMonthForRetention = {}
+
+//     // Get current month and year
+//     const currentDate = new Date();
+//     const currentMonth = currentDate.getMonth() + 1; // Month is zero-indexed
+//     const currentYear = currentDate.getFullYear();
+
+//     data?.forEach((item) => {
+//         const plexusPoints = parseFloat(item.PlexusPointsInOrganization) || 0;
+//         const paidLevel = parseInt(item.PaidLevel, 10) || 0;
+//         const Level = parseInt(item.Level, 10) || 0;
+//         const createdDate = item.CreatedDate;
+
+
+
+//         const PL100Above = calculatePL100Above(paidLevel);
+//         const PL50_99 = calculatePL50_99(paidLevel);
+//         const PL25_49 = calculatePL25_49(paidLevel);
+//         let compressedPts = 0;
+
+//         if (plexusPoints === 0) {
+//             compressedPts = 0;
+//         } else if (plexusPoints === PL100Above) {
+//             compressedPts = calculatePV100Above(Level);
+
+//         } else if (plexusPoints === PL50_99) {
+//             compressedPts = calculatePV50_99(Level);
+//         } else if (plexusPoints === PL25_49) {
+//             compressedPts = calculatePV25_49(Level);
+//         }
+
+//         fullyCompressedPts += compressedPts;
+
+//         const nextAutoOrder = item.NextAutoOrder;
+//         const customerType = item.CustomerType;
+
+
+//         if (!nextAutoOrder) {
+//             pointsGainedThisMonthWithoutSubscription += compressedPts;
+//         }
+//         if (Level < 8 && customerType === "VIP Customer") {
+//             const createdDateParts = createdDate.split(/[/-]/);  //i change here
+//             const createdMonth = parseInt(createdDateParts[1], 10);
+//             const createdYear = parseInt(createdDateParts[2], 10);
+
+//             if (createdMonth === currentMonth && createdYear === currentYear) {
+//                 newVipsTotal += 1;
+//                 pointsFromNewVips += compressedPts;
+//             }
+
+
+//         }
+
+//         if (createdDate) {  // Check if createdDate is defined before splitting
+//             const createdDateParts = createdDate.split(/[/-]/);
+//             const createdMonth = parseInt(createdDateParts[0], 10);
+//             const createdYear = parseInt(createdDateParts[2], 10);
+
+//             if (createdYear === currentYear) {
+//                 recordedThisMonthForRetention[createdMonth] = (recordedThisMonthForRetention[createdMonth] || 0) + compressedPts;
+//             }
+//         }
+//         if (createdDate) {  // Check if createdDate is defined before splitting
+//             const createdDateParts = createdDate.split(/[/-]/);
+//             const createdMonth = parseInt(createdDateParts[0], 10);
+//             const createdYear = parseInt(createdDateParts[2], 10);
+
+
+//             if (createdYear === currentYear) {
+//                 const pv100AbovePoints = calculatePV100Above(Level);
+//                 ptsWorthForRetention[createdMonth] = (ptsWorthForRetention[createdMonth] || 0) + pv100AbovePoints;
+//             }
+
+//         }
+
+
+
+
+//     });
+
+//     return {
+//         fullyCompressedPts,
+//         pointsGainedThisMonthWithoutSubscription,
+//         newVipsTotal,
+//         pointsFromNewVips,
+//         ptsWorthForRetention,
+//         recordedThisMonthForRetention
+
+//     };
+// };
+
 const calculateFullyCompressedPoints = (data) => {
     let fullyCompressedPts = 0;
     let pointsGainedThisMonthWithoutSubscription = 0;
-    let newVipsTotal = 0
-    let pointsFromNewVips = 0
+    let newVipsTotal = 0;
+    let pointsFromNewVips = 0;
     let ptsWorthForRetention = {};
-
-    let recordedThisMonthForRetention = {}
+    let recordedThisMonthForRetention = {};
 
     // Get current month and year
     const currentDate = new Date();
@@ -175,8 +264,6 @@ const calculateFullyCompressedPoints = (data) => {
         const Level = parseInt(item.Level, 10) || 0;
         const createdDate = item.CreatedDate;
 
-
-
         const PL100Above = calculatePL100Above(paidLevel);
         const PL50_99 = calculatePL50_99(paidLevel);
         const PL25_49 = calculatePL25_49(paidLevel);
@@ -186,7 +273,6 @@ const calculateFullyCompressedPoints = (data) => {
             compressedPts = 0;
         } else if (plexusPoints === PL100Above) {
             compressedPts = calculatePV100Above(Level);
-
         } else if (plexusPoints === PL50_99) {
             compressedPts = calculatePV50_99(Level);
         } else if (plexusPoints === PL25_49) {
@@ -198,48 +284,89 @@ const calculateFullyCompressedPoints = (data) => {
         const nextAutoOrder = item.NextAutoOrder;
         const customerType = item.CustomerType;
 
-
         if (!nextAutoOrder) {
             pointsGainedThisMonthWithoutSubscription += compressedPts;
         }
+
         if (Level < 8 && customerType === "VIP Customer") {
-            const createdDateParts = createdDate.split(/[/-]/);  //i change here
-            const createdMonth = parseInt(createdDateParts[1], 10);
+            let createdDateParts;
+            let dayIndex, monthIndex;
+
+            if (createdDate.includes("-")) {
+                createdDateParts = createdDate.split("-");
+                dayIndex = 0;
+                monthIndex = 1;
+            } else if (createdDate.includes("/")) {
+                createdDateParts = createdDate.split("/");
+                dayIndex = 1;
+                monthIndex = 0;
+            } else {
+                console.error("Invalid CreatedDate format:", createdDate);
+                // Handle invalid format if needed
+                return;
+            }
+
+            const createdMonth = parseInt(createdDateParts[monthIndex], 10);
             const createdYear = parseInt(createdDateParts[2], 10);
 
             if (createdMonth === currentMonth && createdYear === currentYear) {
                 newVipsTotal += 1;
                 pointsFromNewVips += compressedPts;
             }
-
-
         }
 
-        if (createdDate) {  // Check if createdDate is defined before splitting
-            const createdDateParts = createdDate.split(/[/-]/);
-            const createdMonth = parseInt(createdDateParts[1], 10);
+        if (createdDate) {
+            let createdDateParts;
+            let dayIndex, monthIndex;
+
+            if (createdDate.includes("-")) {
+                createdDateParts = createdDate.split("-");
+                dayIndex = 0;
+                monthIndex = 1;
+            } else if (createdDate.includes("/")) {
+                createdDateParts = createdDate.split("/");
+                dayIndex = 1;
+                monthIndex = 0;
+            } else {
+                console.error("Invalid CreatedDate format:", createdDate);
+                // Handle invalid format if needed
+                return;
+            }
+
+            const createdMonth = parseInt(createdDateParts[monthIndex], 10);
             const createdYear = parseInt(createdDateParts[2], 10);
 
             if (createdYear === currentYear) {
                 recordedThisMonthForRetention[createdMonth] = (recordedThisMonthForRetention[createdMonth] || 0) + compressedPts;
             }
         }
-        if (createdDate) {  // Check if createdDate is defined before splitting
-            const createdDateParts = createdDate.split(/[/-]/);
-            const createdMonth = parseInt(createdDateParts[1], 10);
-            const createdYear = parseInt(createdDateParts[2], 10);
 
+        if (createdDate) {
+            let createdDateParts;
+            let dayIndex, monthIndex;
+
+            if (createdDate.includes("-")) {
+                createdDateParts = createdDate.split("-");
+                dayIndex = 0;
+                monthIndex = 1;
+            } else if (createdDate.includes("/")) {
+                createdDateParts = createdDate.split("/");
+                dayIndex = 1;
+                monthIndex = 0;
+            } else {
+                console.error("Invalid CreatedDate format:", createdDate);
+                // Handle invalid format if needed
+                return;
+            }
+
+            const createdMonth = parseInt(createdDateParts[monthIndex], 10);
+            const createdYear = parseInt(createdDateParts[2], 10);
 
             if (createdYear === currentYear) {
                 const pv100AbovePoints = calculatePV100Above(Level);
                 ptsWorthForRetention[createdMonth] = (ptsWorthForRetention[createdMonth] || 0) + pv100AbovePoints;
             }
-
         }
-
-
-
-
     });
 
     return {
@@ -248,10 +375,10 @@ const calculateFullyCompressedPoints = (data) => {
         newVipsTotal,
         pointsFromNewVips,
         ptsWorthForRetention,
-        recordedThisMonthForRetention
-
+        recordedThisMonthForRetention,
     };
 };
+
 
 
 const sumOfTotalPlexusPoints = (data) => {
@@ -266,10 +393,51 @@ const sumOfTotalPlexusPoints = (data) => {
 };
 
 
+// const lastMonthVips = (data) => {
+//     let lastMonthVipsTotal = 0; // Initialize the count to 0
+//     let lastMonthPointsFromNewVips = 0; // Initialize the sum to 0
+//     let orderedLastMonthForRetention = {}
+
+//     const currentDate = new Date();
+//     const currentMonth = currentDate.getMonth() + 1; // Month is zero-indexed
+//     const currentYear = currentDate.getFullYear();
+
+//     data.forEach((item) => {
+//         const plexusPoints = parseFloat(item.PlexusPointsInOrganization) || 0;
+//         const level = parseInt(item.Level, 10) || 0;
+//         const createdDate = item.CreatedDate;
+//         const customerType = item.CustomerType;
+
+//         if (customerType === "VIP Customer") {
+//             const createdDateParts = createdDate.split(/[/-]/);
+//             const createdMonth = parseInt(createdDateParts[1], 10);
+//             const createdYear = parseInt(createdDateParts[2], 10);
+
+//             if (createdMonth === currentMonth - 1 && createdYear === currentYear) {
+//                 lastMonthVipsTotal += 1;
+//                 lastMonthPointsFromNewVips += plexusPoints;
+//             }
+//         }
+//         if (createdDate) {  // Check if createdDate is defined before splitting
+//             const createdDateParts = createdDate.split(/[/-]/);
+//             const createdMonth = parseInt(createdDateParts[1], 10);
+//             const createdYear = parseInt(createdDateParts[2], 10);
+
+//             if (createdYear === currentYear) {
+//                 orderedLastMonthForRetention[createdMonth] = (orderedLastMonthForRetention[createdMonth] || 0) + plexusPoints;
+//             }
+//         }
+
+//     });
+
+//     return { lastMonthVipsTotal, lastMonthPointsFromNewVips, orderedLastMonthForRetention };
+// };
+
+
 const lastMonthVips = (data) => {
-    let lastMonthVipsTotal = 0; // Initialize the count to 0
-    let lastMonthPointsFromNewVips = 0; // Initialize the sum to 0
-    let orderedLastMonthForRetention = {}
+    let lastMonthVipsTotal = 0;
+    let lastMonthPointsFromNewVips = 0;
+    let orderedLastMonthForRetention = {};
 
     const currentDate = new Date();
     const currentMonth = currentDate.getMonth() + 1; // Month is zero-indexed
@@ -277,13 +445,28 @@ const lastMonthVips = (data) => {
 
     data.forEach((item) => {
         const plexusPoints = parseFloat(item.PlexusPointsInOrganization) || 0;
-        const level = parseInt(item.Level, 10) || 0;
         const createdDate = item.CreatedDate;
         const customerType = item.CustomerType;
 
-        if (customerType === "VIP Customer") {
-            const createdDateParts = createdDate.split(/[/-]/);
-            const createdMonth = parseInt(createdDateParts[1], 10);
+        if (customerType === "VIP Customer" && createdDate) {
+            let createdDateParts;
+            let dayIndex, monthIndex;
+
+            if (createdDate.includes("-")) {
+                createdDateParts = createdDate.split("-");
+                dayIndex = 0;
+                monthIndex = 1;
+            } else if (createdDate.includes("/")) {
+                createdDateParts = createdDate.split("/");
+                dayIndex = 1;
+                monthIndex = 0;
+            } else {
+                console.error("Invalid CreatedDate format:", createdDate);
+                // Handle invalid format if needed
+                return;
+            }
+
+            const createdMonth = parseInt(createdDateParts[monthIndex], 10);
             const createdYear = parseInt(createdDateParts[2], 10);
 
             if (createdMonth === currentMonth - 1 && createdYear === currentYear) {
@@ -291,16 +474,32 @@ const lastMonthVips = (data) => {
                 lastMonthPointsFromNewVips += plexusPoints;
             }
         }
-        if (createdDate) {  // Check if createdDate is defined before splitting
-            const createdDateParts = createdDate.split(/[/-]/);
-            const createdMonth = parseInt(createdDateParts[1], 10);
+
+        if (createdDate) { // Check if createdDate is defined before splitting
+            let createdDateParts;
+            let dayIndex, monthIndex;
+
+            if (createdDate.includes("-")) {
+                createdDateParts = createdDate.split("-");
+                dayIndex = 0;
+                monthIndex = 1;
+            } else if (createdDate.includes("/")) {
+                createdDateParts = createdDate.split("/");
+                dayIndex = 1;
+                monthIndex = 0;
+            } else {
+                console.error("Invalid CreatedDate format:", createdDate);
+                // Handle invalid format if needed
+                return;
+            }
+
+            const createdMonth = parseInt(createdDateParts[monthIndex], 10);
             const createdYear = parseInt(createdDateParts[2], 10);
 
             if (createdYear === currentYear) {
                 orderedLastMonthForRetention[createdMonth] = (orderedLastMonthForRetention[createdMonth] || 0) + plexusPoints;
             }
         }
-
     });
 
     return { lastMonthVipsTotal, lastMonthPointsFromNewVips, orderedLastMonthForRetention };
@@ -467,10 +666,49 @@ const calculatePointsGainedLastMonthWithoutSubs = (data) => {
 
 
 // TopRecruiters Start
-const calculateTopRecruiters = (data, month) => {
-    const curMonth = Number(month)
-    const currentYear = new Date().getFullYear();
+// const calculateTopRecruiters = (data, month) => {
+//     const curMonth = Number(month)
+//     const currentYear = new Date().getFullYear();
 
+
+//     // Filter data based on CreatedDate matching the provided month and current year
+//     const filteredData = data.filter((row) => {
+//         const createdDate = row['CreatedDate'];
+//         if (!createdDate) {
+//             return false;
+//         }
+
+//         const [date, rowMonth, year] = createdDate.split(/[/-]/);
+//         return parseInt(rowMonth) === curMonth && parseInt(year) === currentYear;
+//     });
+
+
+//     // Count the occurrences of each SponsorName
+//     const sponsorCounts = new Map();
+
+//     filteredData.forEach((row) => {
+//         const level = parseInt(row['Level']);
+//         const sponsorLevel = level - 1
+//         if (sponsorLevel >= 1 && sponsorLevel <= 7) {
+//             const sponsorName = `${row.SponsorFirstName} ${row.SponsorLastName}`;
+//             sponsorCounts.set(sponsorName, (sponsorCounts.get(sponsorName) || 0) + 1);
+//         }
+//     });
+
+//     // Convert the sponsorCounts map into an array of objects
+//     const topNewVip = Array.from(sponsorCounts, ([SponsorName, TopNewVip]) => ({ SponsorName, TopNewVip }));
+
+//     // Sort the topNewVip array in descending order based on TopNewVip
+//     topNewVip.sort((a, b) => b.TopNewVip - a.TopNewVip);
+
+
+//     return topNewVip;
+// };
+
+
+const calculateTopRecruiters = (data, month) => {
+    const curMonth = Number(month);
+    const currentYear = new Date().getFullYear();
 
     // Filter data based on CreatedDate matching the provided month and current year
     const filteredData = data.filter((row) => {
@@ -479,17 +717,35 @@ const calculateTopRecruiters = (data, month) => {
             return false;
         }
 
-        const [date, rowMonth, year] = createdDate.split(/[/-]/);
-        return parseInt(rowMonth) === curMonth && parseInt(year) === currentYear;
-    });
+        let createdDateParts;
+        let dayIndex, monthIndex;
 
+        if (createdDate.includes("-")) {
+            createdDateParts = createdDate.split("-");
+            dayIndex = 0;
+            monthIndex = 1;
+        } else if (createdDate.includes("/")) {
+            createdDateParts = createdDate.split("/");
+            dayIndex = 1;
+            monthIndex = 0;
+        } else {
+            console.error("Invalid createdDate format:", createdDate);
+            // Handle invalid format if needed
+            return false;
+        }
+
+        const createdMonth = parseInt(createdDateParts[monthIndex], 10);
+        const createdYear = parseInt(createdDateParts[2], 10);
+
+        return createdMonth === curMonth && createdYear === currentYear;
+    });
 
     // Count the occurrences of each SponsorName
     const sponsorCounts = new Map();
 
     filteredData.forEach((row) => {
         const level = parseInt(row['Level']);
-        const sponsorLevel = level - 1
+        const sponsorLevel = level - 1;
         if (sponsorLevel >= 1 && sponsorLevel <= 7) {
             const sponsorName = `${row.SponsorFirstName} ${row.SponsorLastName}`;
             sponsorCounts.set(sponsorName, (sponsorCounts.get(sponsorName) || 0) + 1);
@@ -502,14 +758,53 @@ const calculateTopRecruiters = (data, month) => {
     // Sort the topNewVip array in descending order based on TopNewVip
     topNewVip.sort((a, b) => b.TopNewVip - a.TopNewVip);
 
-
     return topNewVip;
 };
+
 // TopRecruiters end
 
 // TopLeadersWithNewAmbassadors Start
+// const calculateTopLeadersWithNewAmbassadors = (data, month) => {
+//     const curMonth = Number(month)
+//     const currentYear = new Date().getFullYear();
+
+//     // Filter data based on JoinDate matching the current month and year
+//     const filteredData = data.filter((row) => {
+//         const joinDate = row['JoinDate'];
+//         const customerType = row['CustomerType'];
+
+//         if (!joinDate || customerType !== 'Brand Ambassador') {
+//             return false;
+//         }
+
+
+//         const [date, rowMonth, year] = joinDate.split(/[/-]/);
+//         return parseInt(rowMonth) === curMonth && parseInt(year) === currentYear;
+//     });
+//     const newBrandAmbassadors = filteredData.length
+//     const newBrandAmbassadorReport = filteredData
+
+
+//     const sponsorCounts = new Map();
+
+//     filteredData.forEach((row) => {
+//         const level = parseInt(row['Level']);
+//         const sponsorLevel = level - 1
+//         if (sponsorLevel >= 1 && sponsorLevel <= 7) {
+//             const sponsorName = `${row.SponsorFirstName} ${row.SponsorLastName}`;
+//             sponsorCounts.set(sponsorName, (sponsorCounts.get(sponsorName) || 0) + 1);
+//         }
+//     });
+
+//     const topNewAmbassadors = Array.from(sponsorCounts, ([SponsorName, newAmbassadors]) => ({ SponsorName, newAmbassadors }));
+
+//     topNewAmbassadors.sort((a, b) => b.newAmbassadors - a.newAmbassadors);
+
+//     return { topNewAmbassadors, newBrandAmbassadors, newBrandAmbassadorReport };
+// };
+
 const calculateTopLeadersWithNewAmbassadors = (data, month) => {
-    const curMonth = Number(month)
+    const curMonth = Number(month);
     const currentYear = new Date().getFullYear();
 
     // Filter data based on JoinDate matching the current month and year
@@ -521,19 +816,37 @@ const calculateTopLeadersWithNewAmbassadors = (data, month) => {
             return false;
         }
 
+        let joinDateParts;
+        let dayIndex, monthIndex;
 
-        const [date, rowMonth, year] = joinDate.split(/[/-]/);
-        return parseInt(rowMonth) === curMonth && parseInt(year) === currentYear;
+        if (joinDate.includes("-")) {
+            joinDateParts = joinDate.split("-");
+            dayIndex = 0;
+            monthIndex = 1;
+        } else if (joinDate.includes("/")) {
+            joinDateParts = joinDate.split("/");
+            dayIndex = 1;
+            monthIndex = 0;
+        } else {
+            console.error("Invalid JoinDate format:", joinDate);
+            // Handle invalid format if needed
+            return false;
+        }
+
+        const joinMonth = parseInt(joinDateParts[monthIndex], 10);
+        const joinYear = parseInt(joinDateParts[2], 10);
+
+        return joinMonth === curMonth && joinYear === currentYear;
     });
-    const newBrandAmbassadors = filteredData.length
-    const newBrandAmbassadorReport = filteredData
 
+    const newBrandAmbassadors = filteredData.length;
+    const newBrandAmbassadorReport = filteredData;
 
     const sponsorCounts = new Map();
 
     filteredData.forEach((row) => {
         const level = parseInt(row['Level']);
-        const sponsorLevel = level - 1
+        const sponsorLevel = level - 1;
         if (sponsorLevel >= 1 && sponsorLevel <= 7) {
             const sponsorName = `${row.SponsorFirstName} ${row.SponsorLastName}`;
             sponsorCounts.set(sponsorName, (sponsorCounts.get(sponsorName) || 0) + 1);
@@ -546,21 +859,45 @@ const calculateTopLeadersWithNewAmbassadors = (data, month) => {
 
     return { topNewAmbassadors, newBrandAmbassadors, newBrandAmbassadorReport };
 };
+
 // TopLeadersWithNewAmbassadors end
-
-
-
-
-
 
 const calculateCurrentPointsData = (data) => {
     // Filter the data to include only rows where PV is a valid number and not 0
     return data.filter((row) => parseInt(row.PlexusPointsInOrganization, 10) !== 0 && !isNaN(parseInt(row.PlexusPointsInOrganization, 10)));
 };
 
+// const filterDataForLvl1 = (data) => {
+//     // Filter the data to include only rows with Level > 1, CustomerType as "VIP Customer",
+//     // and JoinDate in the current month and year
+
+//     const currentDate = new Date();
+//     const targetMonth = currentDate.getMonth() + 1; // Get the current month (1 to 12)
+//     const targetYear = currentDate.getFullYear(); // Get the current year
+
+//     return data.filter((row) => {
+//         if (row.CreatedDate) {
+//             // Check if the CreatedDate property exists in the row
+//             const [day, month, year] = row.CreatedDate.split(/[-/]/); // Split the date using either hyphen or slash
+
+//             const createdMonth = parseInt(month, 10); // Parse the month as an integer
+//             const createdYear = parseInt(year, 10);
+
+//             return (
+//                 parseInt(row.Level, 10) === 1 &&
+//                 row.CustomerType === 'VIP Customer' &&
+//                 createdMonth === targetMonth &&
+//                 createdYear === targetYear
+//             );
+//         }
+//         return false; // Skip rows without a valid CreatedDate
+//     });
+// };
+
+
 const filterDataForLvl1 = (data) => {
     // Filter the data to include only rows with Level > 1, CustomerType as "VIP Customer",
-    // and JoinDate in the current month and year
+    // and CreatedDate in the current month and year
 
     const currentDate = new Date();
     const targetMonth = currentDate.getMonth() + 1; // Get the current month (1 to 12)
@@ -569,10 +906,25 @@ const filterDataForLvl1 = (data) => {
     return data.filter((row) => {
         if (row.CreatedDate) {
             // Check if the CreatedDate property exists in the row
-            const [day, month, year] = row.CreatedDate.split(/[-/]/); // Split the date using either hyphen or slash
+            let createdDateParts;
+            let dayIndex, monthIndex;
 
-            const createdMonth = parseInt(month, 10); // Parse the month as an integer
-            const createdYear = parseInt(year, 10);
+            if (row.CreatedDate.includes("-")) {
+                createdDateParts = row.CreatedDate.split("-");
+                dayIndex = 0;
+                monthIndex = 1;
+            } else if (row.CreatedDate.includes("/")) {
+                createdDateParts = row.CreatedDate.split("/");
+                dayIndex = 1;
+                monthIndex = 0;
+            } else {
+                console.error("Invalid CreatedDate format:", row.CreatedDate);
+                // Handle invalid format if needed
+                return false;
+            }
+
+            const createdMonth = parseInt(createdDateParts[monthIndex], 10); // Parse the month as an integer
+            const createdYear = parseInt(createdDateParts[2], 10);
 
             return (
                 parseInt(row.Level, 10) === 1 &&
@@ -585,9 +937,36 @@ const filterDataForLvl1 = (data) => {
     });
 };
 
+// const filterDataForLvl2 = (data) => {
+//     // Filter the data to include only rows with Level > 1, CustomerType as "VIP Customer",
+//     // and JoinDate in the current month and year
+
+//     const currentDate = new Date();
+//     const targetMonth = currentDate.getMonth() + 1; // Get the current month (1 to 12)
+//     const targetYear = currentDate.getFullYear(); // Get the current year
+
+//     return data.filter((row) => {
+//         if (row.CreatedDate) {
+//             // Check if the CreatedDate property exists in the row
+//             const [day, month, year] = row.CreatedDate.split(/[-/]/); // Split the date using either hyphen or slash
+
+//             const createdMonth = parseInt(month, 10); // Parse the month as an integer
+//             const createdYear = parseInt(year, 10);
+
+//             return (
+//                 parseInt(row.Level, 10) > 1 &&
+//                 row.CustomerType === 'VIP Customer' &&
+//                 createdMonth === targetMonth &&
+//                 createdYear === targetYear
+//             );
+//         }
+//         return false; // Skip rows without a valid CreatedDate
+//     });
+// };
+
 const filterDataForLvl2 = (data) => {
     // Filter the data to include only rows with Level > 1, CustomerType as "VIP Customer",
-    // and JoinDate in the current month and year
+    // and CreatedDate in the current month and year
 
     const currentDate = new Date();
     const targetMonth = currentDate.getMonth() + 1; // Get the current month (1 to 12)
@@ -596,10 +975,25 @@ const filterDataForLvl2 = (data) => {
     return data.filter((row) => {
         if (row.CreatedDate) {
             // Check if the CreatedDate property exists in the row
-            const [day, month, year] = row.CreatedDate.split(/[-/]/); // Split the date using either hyphen or slash
+            let createdDateParts;
+            let dayIndex, monthIndex;
 
-            const createdMonth = parseInt(month, 10); // Parse the month as an integer
-            const createdYear = parseInt(year, 10);
+            if (row.CreatedDate.includes("-")) {
+                createdDateParts = row.CreatedDate.split("-");
+                dayIndex = 0;
+                monthIndex = 1;
+            } else if (row.CreatedDate.includes("/")) {
+                createdDateParts = row.CreatedDate.split("/");
+                dayIndex = 1;
+                monthIndex = 0;
+            } else {
+                console.error("Invalid CreatedDate format:", row.CreatedDate);
+                // Handle invalid format if needed
+                return false;
+            }
+
+            const createdMonth = parseInt(createdDateParts[monthIndex], 10); // Parse the month as an integer
+            const createdYear = parseInt(createdDateParts[2], 10);
 
             return (
                 parseInt(row.Level, 10) > 1 &&
@@ -610,18 +1004,6 @@ const filterDataForLvl2 = (data) => {
         }
         return false; // Skip rows without a valid CreatedDate
     });
-};
-
-const totalPv = (data) => {
-    let total = 0;
-
-    data.forEach((row) => {
-        if (row.PersonalVolume) {
-            total += parseFloat(row.PersonalVolume);
-        }
-    });
-
-    return total;
 };
 
 
@@ -649,13 +1031,13 @@ export const importPointsAndRankupReport = catchAsyncError(async (req, res, next
 
         try {
             const deleteCommand = new DeleteObjectCommand({
-                Bucket: "theanalyticaladvantage",
+                Bucket: "dusktilldawn",
                 Key: s3Key,
             });
             await s3.send(deleteCommand);
 
             const uploadCommand = new PutObjectCommand({
-                Bucket: "theanalyticaladvantage",
+                Bucket: "dusktilldawn",
                 Key: s3Key,
                 Body: Buffer.from(file.data)
             });
@@ -667,7 +1049,7 @@ export const importPointsAndRankupReport = catchAsyncError(async (req, res, next
 
         // Generate a presigned URL for fetching the uploaded CSV file from S3
         const presignedUrl = await getSignedUrl(s3, new GetObjectCommand({
-            Bucket: "theanalyticaladvantage",
+            Bucket: "dusktilldawn",
             Key: s3Key,
         }));
 
@@ -682,22 +1064,12 @@ export const importPointsAndRankupReport = catchAsyncError(async (req, res, next
 
 
 
-                
-                
-                //here you can change orders by filtereddata or Pv
-                
-                // const filteredData = await filterData(data, month);
-                // const monthlyOrdersRows = filteredData.length
-
-                
-                const filteredData = totalOrders(data)
-                const monthlyOrdersRows = totalOrders.length
+                const filteredData = await filterData(data, month);
+                const monthlyOrdersRows = filteredData.length
 
                 const filterdDataForCc = filterDataForCcReport(data, month);
 
                 const dataForLegs = calculateLevel1Legs(data, month);
-
-                //end 
 
                 // Create a new array with unique LegNames and the sum of PlexusPointsInOrganization for each common LegName
                 const legNamesArray = Array.from(dataForLegs.reduce((acc, item) => {
@@ -733,8 +1105,6 @@ export const importPointsAndRankupReport = catchAsyncError(async (req, res, next
                 const level1VipsCount = filteredDataForLvl1.length;
                 const filteredDataForLvl2 = await filterDataForLvl2(data);
                 const level2PlusVipsCount = filteredDataForLvl2.length;
-
-                const totalPersonalVolume = totalPv(data)
 
                 const { lastMonthVipsTotal, lastMonthPointsFromNewVips, orderedLastMonthForRetention } = await lastMonthVips(data);
 
@@ -892,8 +1262,7 @@ export const importPointsAndRankupReport = catchAsyncError(async (req, res, next
                         Lvl1VipsReport,
                         Lvl2PlusVipsReport,
                         level1VipsCount,
-                        level2PlusVipsCount,
-                        totalPersonalVolume
+                        level2PlusVipsCount
 
 
 
@@ -920,10 +1289,10 @@ export const importPointsAndRankupReport = catchAsyncError(async (req, res, next
 
 export const getForcastingEstimate = catchAsyncError(async (req, res, next) => {
 
-    const currentDate = new Date();
-    const monthNo = currentDate.getMonth() + 1;
+    // const currentDate = new Date();
+    // const monthNo = currentDate.getMonth() + 1;
 
-    // const monthNo = 8
+    const monthNo = 8
     try {
         const userId = req.user.id;
         // Find the PointsAndRankup document for the specified month
@@ -937,14 +1306,12 @@ export const getForcastingEstimate = catchAsyncError(async (req, res, next) => {
             return next(new ErrorHandler(`No data found for previous month ${monthNo}.`, 404));
         }
         const ordersMonthlyReport = report.ordersMonthlyReport
-        const ordersPreviousMonthsCount = previousMonthReport.ordersMonthlyReport.length
         const filterdDataForCreditCardReport = report.filterdDataForCreditCardReport
         const legNamesArrayReport = report.legNamesArrayReport
         const top8RowsLegsReport = report.top8RowsLegsReport
         const topRecruitersReport = report.topRecruitersReport
         const topLeadersWithNewAmbassadorsReport = report.topLeadersWithNewAmbassadorsReport
         const monthlyOrders = report.monthlyOrders
-        const previousMonthOrders = previousMonthReport.monthlyOrders
         const newBrandAmbassadors = report.newBrandAmbassadorsCount
         const currentPointsReport = report.currentPointsReport
         const totalCurrentPoints = report.totalCurrentPoints
@@ -953,9 +1320,7 @@ export const getForcastingEstimate = catchAsyncError(async (req, res, next) => {
         const Lvl2PlusVipsReport = report.Lvl2PlusVipsReport
         const level1VipsCount = report.level1VipsCount
         const level2PlusVipsCount = report.level2PlusVipsCount
-        
-        const totalCurMonthPersonalVolume = report.totalPersonalVolume
-        const totalPrevMonthPersonalVolume = previousMonthReport.totalPersonalVolume
+
 
 
         const totalOrderProceedThisMonth = report.totalOrderProceedThisMonth
@@ -1043,8 +1408,6 @@ export const getForcastingEstimate = catchAsyncError(async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            totalCurMonthPersonalVolume,
-            totalPrevMonthPersonalVolume,
             totalOrderProceedThisMonth,
             totalOrderProceedLastMonth,
             suspectedSubsDeclinedThisMonth,
@@ -1090,9 +1453,7 @@ export const getForcastingEstimate = catchAsyncError(async (req, res, next) => {
             level2PlusVipsCount,
             level1VipsCount,
             Lvl2PlusVipsReport,
-            Lvl1VipsReport,
-            previousMonthOrders,
-            ordersPreviousMonthsCount
+            Lvl1VipsReport
 
         });
     } catch (error) {

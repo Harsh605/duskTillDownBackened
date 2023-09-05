@@ -85,8 +85,72 @@ const PointsAndRankupSchema = new mongoose.Schema({
         }
 
     ],
+    currentPointsReport: [
+        {
+            CustomerID: String,
+            FirstName: String,
+            LastName: String,
+            Phone: String,
+            Email: String,
+            SponsorID: String,
+            SponsorFirstName: String,
+            SponsorLastName: String,
+            CustomerType:String,
+            Level: Number,
+            PersonalVolume: String,
+            NextAutoOrder: String,
+            OrderIDList: String,
+            PlexusPointsInOrganization: String,
+        }
+
+    ],
+    Lvl1VipsReport: [
+        {
+            CustomerID: String,
+            FirstName: String,
+            LastName: String,
+            Phone: String,
+            Email: String,
+            SponsorID: String,
+            SponsorFirstName: String,
+            SponsorLastName: String,
+            CustomerType:String,
+            Level: Number,
+            PersonalVolume: String,
+            NextAutoOrder: String,
+            OrderIDList: String,
+            PlexusPointsInOrganization: String,
+            CreatedDate: String,
+            JoinDate: String,
+        }
+
+    ],
+    Lvl2PlusVipsReport: [
+        {
+            CustomerID: String,
+            FirstName: String,
+            LastName: String,
+            Phone: String,
+            Email: String,
+            SponsorID: String,
+            SponsorFirstName: String,
+            SponsorLastName: String,
+            CustomerType:String,
+            Level: Number,
+            PersonalVolume: String,
+            NextAutoOrder: String,
+            OrderIDList: String,
+            PlexusPointsInOrganization: String,
+            CreatedDate: String,
+            JoinDate: String,
+        }
+
+    ],
     monthlyOrders: Number,
+    level2PlusVipsCount: Number,
+    level1VipsCount: Number,
     creditCardDeclineRate: Number,
+    totalCurrentPoints: Number,
     fullyCompressedPointsValue: Number,
     averageCompressionBonus: Number,
     totalPointsFromSubscription: Number,
@@ -124,6 +188,7 @@ const PointsAndRankupSchema = new mongoose.Schema({
         ref: "User",
         required: true,
     },
+    totalPersonalVolume: Number
 
 
 
