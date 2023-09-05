@@ -51,10 +51,7 @@ app.use(
         secret: "your-secret-key",
         resave: true,
         saveUninitialized: true,
-         cookie: {
-            secure: true,
-            sameSite:"None",
-        },
+         
     })
 );
 
