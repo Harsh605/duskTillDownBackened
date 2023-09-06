@@ -48,7 +48,7 @@ app.use(cookieParser())
 
 app.use(
     session({
-        secret: "your-secret-key",
+        secret: "harsh",
         resave: true,
         saveUninitialized: true,
         cookie: {
