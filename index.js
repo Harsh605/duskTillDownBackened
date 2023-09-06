@@ -51,10 +51,10 @@ app.use(
         secret: "harsh",
         resave: true,
         saveUninitialized: true,
-        // cookie: {
-        //     secure: true, // Ensures the cookie is sent only over HTTPS
-        //     sameSite: "None", // Specifies SameSite attribute for cross-origin requests
-        // },
+        cookie: {
+            secure: true, // Ensures the cookie is sent only over HTTPS
+            sameSite: "None", // Specifies SameSite attribute for cross-origin requests
+        },
     })
 );
 
