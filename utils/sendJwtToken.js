@@ -6,7 +6,7 @@ const sendToken =(user,statusCode,res)=>{
     const options ={
         httpOnly:true,
         expires: new Date(Date.now()+ process.env.COOKIE_TIME *60*60*60*1000),
-        // sameSite:"None",
+        sameSite:"None",
         secure:true
 
     }
