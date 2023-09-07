@@ -158,11 +158,10 @@ const calculateLevel1Legs = (data) => {
 const calculateFullyCompressedPoints = (data) => {
     let fullyCompressedPts = 0;
     let pointsGainedThisMonthWithoutSubscription = 0;
-    let newVipsTotal = 0
-    let pointsFromNewVips = 0
+    let newVipsTotal = 0;
+    let pointsFromNewVips = 0;
     let ptsWorthForRetention = {};
-
-    let recordedThisMonthForRetention = {}
+    let recordedThisMonthForRetention = {};
 
     // Get current month and year
     const currentDate = new Date();
@@ -175,8 +174,6 @@ const calculateFullyCompressedPoints = (data) => {
         const Level = parseInt(item.Level, 10) || 0;
         const createdDate = item.CreatedDate;
 
-
-
         const PL100Above = calculatePL100Above(paidLevel);
         const PL50_99 = calculatePL50_99(paidLevel);
         const PL25_49 = calculatePL25_49(paidLevel);
@@ -186,7 +183,6 @@ const calculateFullyCompressedPoints = (data) => {
             compressedPts = 0;
         } else if (plexusPoints === PL100Above) {
             compressedPts = calculatePV100Above(Level);
-
         } else if (plexusPoints === PL50_99) {
             compressedPts = calculatePV50_99(Level);
         } else if (plexusPoints === PL25_49) {
@@ -198,48 +194,89 @@ const calculateFullyCompressedPoints = (data) => {
         const nextAutoOrder = item.NextAutoOrder;
         const customerType = item.CustomerType;
 
-
         if (!nextAutoOrder) {
             pointsGainedThisMonthWithoutSubscription += compressedPts;
         }
+
         if (Level < 8 && customerType === "VIP Customer") {
-            const createdDateParts = createdDate.split(/[/-]/);  //i change here
-            const createdMonth = parseInt(createdDateParts[1], 10);
+            let createdDateParts;
+            let dayIndex, monthIndex;
+
+            if (createdDate.includes("-")) {
+                createdDateParts = createdDate.split("-");
+                dayIndex = 0;
+                monthIndex = 1;
+            } else if (createdDate.includes("/")) {
+                createdDateParts = createdDate.split("/");
+                dayIndex = 1;
+                monthIndex = 0;
+            } else {
+                console.error("Invalid CreatedDate format:", createdDate);
+                // Handle invalid format if needed
+                return;
+            }
+
+            const createdMonth = parseInt(createdDateParts[monthIndex], 10);
             const createdYear = parseInt(createdDateParts[2], 10);
 
             if (createdMonth === currentMonth && createdYear === currentYear) {
                 newVipsTotal += 1;
                 pointsFromNewVips += compressedPts;
             }
-
-
         }
 
-        if (createdDate) {  // Check if createdDate is defined before splitting
-            const createdDateParts = createdDate.split(/[/-]/);
-            const createdMonth = parseInt(createdDateParts[1], 10);
+        if (createdDate) {
+            let createdDateParts;
+            let dayIndex, monthIndex;
+
+            if (createdDate.includes("-")) {
+                createdDateParts = createdDate.split("-");
+                dayIndex = 0;
+                monthIndex = 1;
+            } else if (createdDate.includes("/")) {
+                createdDateParts = createdDate.split("/");
+                dayIndex = 1;
+                monthIndex = 0;
+            } else {
+                console.error("Invalid CreatedDate format:", createdDate);
+                // Handle invalid format if needed
+                return;
+            }
+
+            const createdMonth = parseInt(createdDateParts[monthIndex], 10);
             const createdYear = parseInt(createdDateParts[2], 10);
 
             if (createdYear === currentYear) {
                 recordedThisMonthForRetention[createdMonth] = (recordedThisMonthForRetention[createdMonth] || 0) + compressedPts;
             }
         }
-        if (createdDate) {  // Check if createdDate is defined before splitting
-            const createdDateParts = createdDate.split(/[/-]/);
-            const createdMonth = parseInt(createdDateParts[1], 10);
-            const createdYear = parseInt(createdDateParts[2], 10);
 
+        if (createdDate) {
+            let createdDateParts;
+            let dayIndex, monthIndex;
+
+            if (createdDate.includes("-")) {
+                createdDateParts = createdDate.split("-");
+                dayIndex = 0;
+                monthIndex = 1;
+            } else if (createdDate.includes("/")) {
+                createdDateParts = createdDate.split("/");
+                dayIndex = 1;
+                monthIndex = 0;
+            } else {
+                console.error("Invalid CreatedDate format:", createdDate);
+                // Handle invalid format if needed
+                return;
+            }
+
+            const createdMonth = parseInt(createdDateParts[monthIndex], 10);
+            const createdYear = parseInt(createdDateParts[2], 10);
 
             if (createdYear === currentYear) {
                 const pv100AbovePoints = calculatePV100Above(Level);
                 ptsWorthForRetention[createdMonth] = (ptsWorthForRetention[createdMonth] || 0) + pv100AbovePoints;
             }
-
         }
-
-
-
-
     });
 
     return {
@@ -248,11 +285,9 @@ const calculateFullyCompressedPoints = (data) => {
         newVipsTotal,
         pointsFromNewVips,
         ptsWorthForRetention,
-        recordedThisMonthForRetention
-
+        recordedThisMonthForRetention,
     };
 };
-
 
 const sumOfTotalPlexusPoints = (data) => {
     let sumOfPlexusPoints = 0; // Initialize the sum to 0
