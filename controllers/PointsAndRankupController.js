@@ -278,7 +278,7 @@ const calculateFullyCompressedPoints = (data) => {
             }
         }
     });
-
+console.log("recordedThisMonthForRetention"+recordedThisMonthForRetention)
     return {
         fullyCompressedPts,
         pointsGainedThisMonthWithoutSubscription,
@@ -502,10 +502,48 @@ const calculatePointsGainedLastMonthWithoutSubs = (data) => {
 
 
 // TopRecruiters Start
-const calculateTopRecruiters = (data, month) => {
-    const curMonth = Number(month)
-    const currentYear = new Date().getFullYear();
+// const calculateTopRecruiters = (data, month) => {
+//     const curMonth = Number(month)
+//     const currentYear = new Date().getFullYear();
 
+
+//     // Filter data based on CreatedDate matching the provided month and current year
+//     const filteredData = data.filter((row) => {
+//         const createdDate = row['CreatedDate'];
+//         if (!createdDate) {
+//             return false;
+//         }
+
+//         const [date, rowMonth, year] = createdDate.split(/[/-]/);
+//         return parseInt(rowMonth) === curMonth && parseInt(year) === currentYear;
+//     });
+
+
+//     // Count the occurrences of each SponsorName
+//     const sponsorCounts = new Map();
+
+//     filteredData.forEach((row) => {
+//         const level = parseInt(row['Level']);
+//         const sponsorLevel = level - 1
+//         if (sponsorLevel >= 1 && sponsorLevel <= 7) {
+//             const sponsorName = `${row.SponsorFirstName} ${row.SponsorLastName}`;
+//             sponsorCounts.set(sponsorName, (sponsorCounts.get(sponsorName) || 0) + 1);
+//         }
+//     });
+
+//     // Convert the sponsorCounts map into an array of objects
+//     const topNewVip = Array.from(sponsorCounts, ([SponsorName, TopNewVip]) => ({ SponsorName, TopNewVip }));
+
+//     // Sort the topNewVip array in descending order based on TopNewVip
+//     topNewVip.sort((a, b) => b.TopNewVip - a.TopNewVip);
+
+
+//     return topNewVip;
+// };
+
+const calculateTopRecruiters = (data, month) => {
+    const curMonth = Number(month);
+    const currentYear = new Date().getFullYear();
 
     // Filter data based on CreatedDate matching the provided month and current year
     const filteredData = data.filter((row) => {
@@ -514,17 +552,21 @@ const calculateTopRecruiters = (data, month) => {
             return false;
         }
 
-        const [date, rowMonth, year] = createdDate.split(/[/-]/);
-        return parseInt(rowMonth) === curMonth && parseInt(year) === currentYear;
-    });
+        const dateComponents = createdDate.match(/(\d+)[-/](\d+)[-/](\d+)/);
+        if (!dateComponents) {
+            return false; // Invalid date format
+        }
 
+        const [, day, month, year] = dateComponents;
+        return parseInt(month) === curMonth && parseInt(year) === currentYear;
+    });
 
     // Count the occurrences of each SponsorName
     const sponsorCounts = new Map();
 
     filteredData.forEach((row) => {
         const level = parseInt(row['Level']);
-        const sponsorLevel = level - 1
+        const sponsorLevel = level - 1;
         if (sponsorLevel >= 1 && sponsorLevel <= 7) {
             const sponsorName = `${row.SponsorFirstName} ${row.SponsorLastName}`;
             sponsorCounts.set(sponsorName, (sponsorCounts.get(sponsorName) || 0) + 1);
@@ -537,14 +579,53 @@ const calculateTopRecruiters = (data, month) => {
     // Sort the topNewVip array in descending order based on TopNewVip
     topNewVip.sort((a, b) => b.TopNewVip - a.TopNewVip);
 
-
     return topNewVip;
 };
+
 // TopRecruiters end
 
 // TopLeadersWithNewAmbassadors Start
+// const calculateTopLeadersWithNewAmbassadors = (data, month) => {
+//     const curMonth = Number(month)
+//     const currentYear = new Date().getFullYear();
+
+//     // Filter data based on JoinDate matching the current month and year
+//     const filteredData = data.filter((row) => {
+//         const joinDate = row['JoinDate'];
+//         const customerType = row['CustomerType'];
+
+//         if (!joinDate || customerType !== 'Brand Ambassador') {
+//             return false;
+//         }
+
+
+//         const [date, rowMonth, year] = joinDate.split(/[/-]/);
+//         return parseInt(rowMonth) === curMonth && parseInt(year) === currentYear;
+//     });
+//     const newBrandAmbassadors = filteredData.length
+//     const newBrandAmbassadorReport = filteredData
+
+
+//     const sponsorCounts = new Map();
+
+//     filteredData.forEach((row) => {
+//         const level = parseInt(row['Level']);
+//         const sponsorLevel = level - 1
+//         if (sponsorLevel >= 1 && sponsorLevel <= 7) {
+//             const sponsorName = `${row.SponsorFirstName} ${row.SponsorLastName}`;
+//             sponsorCounts.set(sponsorName, (sponsorCounts.get(sponsorName) || 0) + 1);
+//         }
+//     });
+
+//     const topNewAmbassadors = Array.from(sponsorCounts, ([SponsorName, newAmbassadors]) => ({ SponsorName, newAmbassadors }));
+
+//     topNewAmbassadors.sort((a, b) => b.newAmbassadors - a.newAmbassadors);
+
+//     return { topNewAmbassadors, newBrandAmbassadors, newBrandAmbassadorReport };
+// };
+
 const calculateTopLeadersWithNewAmbassadors = (data, month) => {
-    const curMonth = Number(month)
+    const curMonth = Number(month);
     const currentYear = new Date().getFullYear();
 
     // Filter data based on JoinDate matching the current month and year
@@ -556,19 +637,23 @@ const calculateTopLeadersWithNewAmbassadors = (data, month) => {
             return false;
         }
 
+        const dateComponents = joinDate.match(/(\d+)[-/](\d+)[-/](\d+)/);
+        if (!dateComponents) {
+            return false; // Invalid date format
+        }
 
-        const [date, rowMonth, year] = joinDate.split(/[/-]/);
-        return parseInt(rowMonth) === curMonth && parseInt(year) === currentYear;
+        const [, day, month, year] = dateComponents;
+        return parseInt(month) === curMonth && parseInt(year) === currentYear;
     });
-    const newBrandAmbassadors = filteredData.length
-    const newBrandAmbassadorReport = filteredData
 
+    const newBrandAmbassadors = filteredData.length;
+    const newBrandAmbassadorReport = filteredData;
 
     const sponsorCounts = new Map();
 
     filteredData.forEach((row) => {
         const level = parseInt(row['Level']);
-        const sponsorLevel = level - 1
+        const sponsorLevel = level - 1;
         if (sponsorLevel >= 1 && sponsorLevel <= 7) {
             const sponsorName = `${row.SponsorFirstName} ${row.SponsorLastName}`;
             sponsorCounts.set(sponsorName, (sponsorCounts.get(sponsorName) || 0) + 1);
@@ -581,6 +666,7 @@ const calculateTopLeadersWithNewAmbassadors = (data, month) => {
 
     return { topNewAmbassadors, newBrandAmbassadors, newBrandAmbassadorReport };
 };
+
 // TopLeadersWithNewAmbassadors end
 
 
@@ -957,7 +1043,8 @@ export const getForcastingEstimate = catchAsyncError(async (req, res, next) => {
 
     const currentDate = new Date();
     const monthNo = currentDate.getMonth() + 1;
-
+    const previousMonth = monthNo === 1 ? 12 : monthNo - 1;
+    const previousMonthKey = previousMonth.toString();
     // const monthNo = 8
     try {
         const userId = req.user.id;
@@ -1069,10 +1156,15 @@ export const getForcastingEstimate = catchAsyncError(async (req, res, next) => {
         });
 
         // Calculate currentMonthRetention
+
         const currentMonthRetention = {};
         recordedThisMonthForRetention.forEach((value, key) => {
             if (ptsWorthForRetention.has(key)) {
-                currentMonthRetention[key] = (value / ptsWorthForRetention.get(key)) * 100;
+                if (key === previousMonthKey) {
+                    currentMonthRetention[key] = (value / lastMonthPointsFromNewVips) * 100;
+                } else {
+                    currentMonthRetention[key] = (value / ptsWorthForRetention.get(key)) * 100;
+                }
             }
         });
 
