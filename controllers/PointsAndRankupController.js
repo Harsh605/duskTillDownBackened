@@ -198,7 +198,7 @@ const calculateLevel1Legs = (data) => {
 //             pointsGainedThisMonthWithoutSubscription += compressedPts;
 //         }
 
-//         if (Level < 8 && customerType === "VIP Customer") {
+//         if (Level < 8 ) {
 //             let createdDateParts;
 //             let dayIndex, monthIndex;
 
