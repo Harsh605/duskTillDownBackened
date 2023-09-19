@@ -155,6 +155,141 @@ const calculateLevel1Legs = (data) => {
 // End Points par Leg
 
 // Start Fully CompressedPoints(CurrentMonth) and for lastMoth it is Average Compression Bonus..........................................
+// const calculateFullyCompressedPoints = (data) => {
+//     let fullyCompressedPts = 0;
+//     let pointsGainedThisMonthWithoutSubscription = 0;
+//     let newVipsTotal = 0;
+//     let pointsFromNewVips = 0;
+//     let ptsWorthForRetention = {};
+//     let recordedThisMonthForRetention = {};
+
+//     // Get current month and year
+//     const currentDate = new Date();
+//     const currentMonth = currentDate.getMonth() + 1; // Month is zero-indexed
+//     const currentYear = currentDate.getFullYear();
+
+//     data?.forEach((item) => {
+//         const plexusPoints = parseFloat(item.PlexusPointsInOrganization) || 0;
+//         const paidLevel = parseInt(item.PaidLevel, 10) || 0;
+//         const Level = parseInt(item.Level, 10) || 0;
+//         const createdDate = item.CreatedDate;
+
+//         const PL100Above = calculatePL100Above(paidLevel);
+//         const PL50_99 = calculatePL50_99(paidLevel);
+//         const PL25_49 = calculatePL25_49(paidLevel);
+//         let compressedPts = 0;
+
+//         if (plexusPoints === 0) {
+//             compressedPts = 0;
+//         } else if (plexusPoints === PL100Above) {
+//             compressedPts = calculatePV100Above(Level);
+//         } else if (plexusPoints === PL50_99) {
+//             compressedPts = calculatePV50_99(Level);
+//         } else if (plexusPoints === PL25_49) {
+//             compressedPts = calculatePV25_49(Level);
+//         }
+
+//         fullyCompressedPts += compressedPts;
+
+//         const nextAutoOrder = item.NextAutoOrder;
+//         const customerType = item.CustomerType;
+
+//         if (!nextAutoOrder) {
+//             pointsGainedThisMonthWithoutSubscription += compressedPts;
+//         }
+
+//         if (Level < 8 && customerType === "VIP Customer") {
+//             let createdDateParts;
+//             let dayIndex, monthIndex;
+
+//             if (createdDate.includes("-")) {
+//                 createdDateParts = createdDate.split("-");
+//                 dayIndex = 0;
+//                 monthIndex = 1;
+//             } else if (createdDate.includes("/")) {
+//                 createdDateParts = createdDate.split("/");
+//                 dayIndex = 1;
+//                 monthIndex = 0;
+//             } else {
+//                 console.error("Invalid CreatedDate format:", createdDate);
+//                 // Handle invalid format if needed
+//                 return;
+//             }
+
+//             const createdMonth = parseInt(createdDateParts[monthIndex], 10);
+//             const createdYear = parseInt(createdDateParts[2], 10);
+
+//             if (createdMonth === currentMonth && createdYear === currentYear) {
+//                 newVipsTotal += 1;
+//                 pointsFromNewVips += compressedPts;
+//             }
+//         }
+
+//         if (createdDate) {
+//             let createdDateParts;
+//             let dayIndex, monthIndex;
+
+//             if (createdDate.includes("-")) {
+//                 createdDateParts = createdDate.split("-");
+//                 dayIndex = 0;
+//                 monthIndex = 1;
+//             } else if (createdDate.includes("/")) {
+//                 createdDateParts = createdDate.split("/");
+//                 dayIndex = 1;
+//                 monthIndex = 0;
+//             } else {
+//                 console.error("Invalid CreatedDate format:", createdDate);
+//                 // Handle invalid format if needed
+//                 return;
+//             }
+
+//             const createdMonth = parseInt(createdDateParts[monthIndex], 10);
+//             const createdYear = parseInt(createdDateParts[2], 10);
+
+//             if (createdYear === currentYear) {
+//                 recordedThisMonthForRetention[createdMonth] = (recordedThisMonthForRetention[createdMonth] || 0) + compressedPts;
+//             }
+//         }
+
+//         if (createdDate) {
+//             let createdDateParts;
+//             let dayIndex, monthIndex;
+
+//             if (createdDate.includes("-")) {
+//                 createdDateParts = createdDate.split("-");
+//                 dayIndex = 0;
+//                 monthIndex = 1;
+//             } else if (createdDate.includes("/")) {
+//                 createdDateParts = createdDate.split("/");
+//                 dayIndex = 1;
+//                 monthIndex = 0;
+//             } else {
+//                 console.error("Invalid CreatedDate format:", createdDate);
+//                 // Handle invalid format if needed
+//                 return;
+//             }
+
+//             const createdMonth = parseInt(createdDateParts[monthIndex], 10);
+//             const createdYear = parseInt(createdDateParts[2], 10);
+
+//             if (createdYear === currentYear) {
+//                 const pv100AbovePoints = calculatePV100Above(Level);
+//                 ptsWorthForRetention[createdMonth] = (ptsWorthForRetention[createdMonth] || 0) + pv100AbovePoints;
+//             }
+//         }
+//     });
+// console.log("recordedThisMonthForRetention"+recordedThisMonthForRetention)
+//     return {
+//         fullyCompressedPts,
+//         pointsGainedThisMonthWithoutSubscription,
+//         newVipsTotal,
+//         pointsFromNewVips,
+//         ptsWorthForRetention,
+//         recordedThisMonthForRetention,
+//     };
+// };
+
+
 const calculateFullyCompressedPoints = (data) => {
     let fullyCompressedPts = 0;
     let pointsGainedThisMonthWithoutSubscription = 0;
@@ -199,86 +334,91 @@ const calculateFullyCompressedPoints = (data) => {
         }
 
         if (Level < 8 && customerType === "VIP Customer") {
-            let createdDateParts;
-            let dayIndex, monthIndex;
-
-            if (createdDate.includes("-")) {
-                createdDateParts = createdDate.split("-");
-                dayIndex = 0;
-                monthIndex = 1;
-            } else if (createdDate.includes("/")) {
-                createdDateParts = createdDate.split("/");
-                dayIndex = 1;
-                monthIndex = 0;
-            } else {
-                console.error("Invalid CreatedDate format:", createdDate);
-                // Handle invalid format if needed
-                return;
+            let dateComponents;
+            // Check for the date format using a regular expression
+            if (createdDate.includes('/')) {
+                dateComponents = createdDate.match(/(\d+)\/(\d+)\/(\d+)/);
+            } else if (createdDate.includes('-')) {
+                dateComponents = createdDate.match(/(\d+)-(\d+)-(\d+)/);
             }
 
-            const createdMonth = parseInt(createdDateParts[monthIndex], 10);
-            const createdYear = parseInt(createdDateParts[2], 10);
+            if (dateComponents) {
+                let [, month = '', day = '', year = ''] = dateComponents;
+                // Check if the format is MM/DD/YYYY (with /) or DD-MM-YYYY (with -) and parse accordingly
+                if (createdDate.includes('/')) {
+                    [, month = '', day = '', year = ''] = dateComponents;
+                } else {
+                    [, day = '', month = '', year = ''] = dateComponents;
+                }
 
-            if (createdMonth === currentMonth && createdYear === currentYear) {
-                newVipsTotal += 1;
-                pointsFromNewVips += compressedPts;
-            }
-        }
+                const createdMonth = parseInt(month, 10);
+                const createdYear = parseInt(year, 10);
 
-        if (createdDate) {
-            let createdDateParts;
-            let dayIndex, monthIndex;
-
-            if (createdDate.includes("-")) {
-                createdDateParts = createdDate.split("-");
-                dayIndex = 0;
-                monthIndex = 1;
-            } else if (createdDate.includes("/")) {
-                createdDateParts = createdDate.split("/");
-                dayIndex = 1;
-                monthIndex = 0;
-            } else {
-                console.error("Invalid CreatedDate format:", createdDate);
-                // Handle invalid format if needed
-                return;
-            }
-
-            const createdMonth = parseInt(createdDateParts[monthIndex], 10);
-            const createdYear = parseInt(createdDateParts[2], 10);
-
-            if (createdYear === currentYear) {
-                recordedThisMonthForRetention[createdMonth] = (recordedThisMonthForRetention[createdMonth] || 0) + compressedPts;
+                if (createdMonth === currentMonth && createdYear === currentYear) {
+                    newVipsTotal += 1;
+                    pointsFromNewVips += compressedPts;
+                }
             }
         }
 
         if (createdDate) {
-            let createdDateParts;
-            let dayIndex, monthIndex;
-
-            if (createdDate.includes("-")) {
-                createdDateParts = createdDate.split("-");
-                dayIndex = 0;
-                monthIndex = 1;
-            } else if (createdDate.includes("/")) {
-                createdDateParts = createdDate.split("/");
-                dayIndex = 1;
-                monthIndex = 0;
-            } else {
-                console.error("Invalid CreatedDate format:", createdDate);
-                // Handle invalid format if needed
-                return;
+            let dateComponents;
+            // Check for the date format using a regular expression
+            if (createdDate.includes('/')) {
+                dateComponents = createdDate.match(/(\d+)\/(\d+)\/(\d+)/);
+            } else if (createdDate.includes('-')) {
+                dateComponents = createdDate.match(/(\d+)-(\d+)-(\d+)/);
             }
 
-            const createdMonth = parseInt(createdDateParts[monthIndex], 10);
-            const createdYear = parseInt(createdDateParts[2], 10);
+            if (dateComponents) {
+                let [, month = '', day = '', year = ''] = dateComponents;
+                // Check if the format is MM/DD/YYYY (with /) or DD-MM-YYYY (with -) and parse accordingly
+                if (createdDate.includes('/')) {
+                    [, month = '', day = '', year = ''] = dateComponents;
+                } else {
+                    [, day = '', month = '', year = ''] = dateComponents;
+                }
 
-            if (createdYear === currentYear) {
-                const pv100AbovePoints = calculatePV100Above(Level);
-                ptsWorthForRetention[createdMonth] = (ptsWorthForRetention[createdMonth] || 0) + pv100AbovePoints;
+                const createdMonth = parseInt(month, 10);
+                const createdYear = parseInt(year, 10);
+
+                if (createdYear === currentYear) {
+                    recordedThisMonthForRetention[createdMonth] = (recordedThisMonthForRetention[createdMonth] || 0) + compressedPts;
+                }
+            }
+        }
+
+        if (createdDate) {
+            let dateComponents;
+            // Check for the date format using a regular expression
+            if (createdDate.includes('/')) {
+                dateComponents = createdDate.match(/(\d+)\/(\d+)\/(\d+)/);
+            } else if (createdDate.includes('-')) {
+                dateComponents = createdDate.match(/(\d+)-(\d+)-(\d+)/);
+            }
+
+            if (dateComponents) {
+                let [, month = '', day = '', year = ''] = dateComponents;
+                // Check if the format is MM/DD/YYYY (with /) or DD-MM-YYYY (with -) and parse accordingly
+                if (createdDate.includes('/')) {
+                    [, month = '', day = '', year = ''] = dateComponents;
+                } else {
+                    [, day = '', month = '', year = ''] = dateComponents;
+                }
+
+                const createdMonth = parseInt(month, 10);
+                const createdYear = parseInt(year, 10);
+
+                if (createdYear === currentYear) {
+                    const pv100AbovePoints = calculatePV100Above(Level);
+                    ptsWorthForRetention[createdMonth] = (ptsWorthForRetention[createdMonth] || 0) + pv100AbovePoints;
+                }
             }
         }
     });
-console.log("recordedThisMonthForRetention"+recordedThisMonthForRetention)
+
+    console.log("recordedThisMonthForRetention", recordedThisMonthForRetention);
+
     return {
         fullyCompressedPts,
         pointsGainedThisMonthWithoutSubscription,
@@ -288,6 +428,9 @@ console.log("recordedThisMonthForRetention"+recordedThisMonthForRetention)
         recordedThisMonthForRetention,
     };
 };
+
+
+
 
 const sumOfTotalPlexusPoints = (data) => {
     let sumOfPlexusPoints = 0; // Initialize the sum to 0
@@ -301,10 +444,50 @@ const sumOfTotalPlexusPoints = (data) => {
 };
 
 
+// const lastMonthVips = (data) => {
+//     let lastMonthVipsTotal = 0; // Initialize the count to 0
+//     let lastMonthPointsFromNewVips = 0; // Initialize the sum to 0
+//     let orderedLastMonthForRetention = {}
+
+//     const currentDate = new Date();
+//     const currentMonth = currentDate.getMonth() + 1; // Month is zero-indexed
+//     const currentYear = currentDate.getFullYear();
+
+//     data.forEach((item) => {
+//         const plexusPoints = parseFloat(item.PlexusPointsInOrganization) || 0;
+//         const level = parseInt(item.Level, 10) || 0;
+//         const createdDate = item.CreatedDate;
+//         const customerType = item.CustomerType;
+
+//         if (customerType === "VIP Customer") {
+//             const createdDateParts = createdDate.split(/[/-]/);
+//             const createdMonth = parseInt(createdDateParts[1], 10);
+//             const createdYear = parseInt(createdDateParts[2], 10);
+
+//             if (createdMonth === currentMonth - 1 && createdYear === currentYear) {
+//                 lastMonthVipsTotal += 1;
+//                 lastMonthPointsFromNewVips += plexusPoints;
+//             }
+//         }
+//         if (createdDate) {  // Check if createdDate is defined before splitting
+//             const createdDateParts = createdDate.split(/[/-]/);
+//             const createdMonth = parseInt(createdDateParts[1], 10);
+//             const createdYear = parseInt(createdDateParts[2], 10);
+
+//             if (createdYear === currentYear) {
+//                 orderedLastMonthForRetention[createdMonth] = (orderedLastMonthForRetention[createdMonth] || 0) + plexusPoints;
+//             }
+//         }
+
+//     });
+
+//     return { lastMonthVipsTotal, lastMonthPointsFromNewVips, orderedLastMonthForRetention };
+// };
+
 const lastMonthVips = (data) => {
     let lastMonthVipsTotal = 0; // Initialize the count to 0
     let lastMonthPointsFromNewVips = 0; // Initialize the sum to 0
-    let orderedLastMonthForRetention = {}
+    let orderedLastMonthForRetention = {};
 
     const currentDate = new Date();
     const currentMonth = currentDate.getMonth() + 1; // Month is zero-indexed
@@ -317,29 +500,67 @@ const lastMonthVips = (data) => {
         const customerType = item.CustomerType;
 
         if (customerType === "VIP Customer") {
-            const createdDateParts = createdDate.split(/[/-]/);
-            const createdMonth = parseInt(createdDateParts[1], 10);
-            const createdYear = parseInt(createdDateParts[2], 10);
+            let dateComponents;
+            // Check for the date format using a regular expression
+            if (createdDate.includes('/')) {
+                dateComponents = createdDate.match(/(\d+)\/(\d+)\/(\d+)/);
+            } else if (createdDate.includes('-')) {
+                dateComponents = createdDate.match(/(\d+)-(\d+)-(\d+)/);
+            }
 
-            if (createdMonth === currentMonth - 1 && createdYear === currentYear) {
-                lastMonthVipsTotal += 1;
-                lastMonthPointsFromNewVips += plexusPoints;
+            if (dateComponents) {
+                let [, month = '', day = '', year = ''] = dateComponents;
+                // Check if the format is MM/DD/YYYY (with /) or DD-MM-YYYY (with -) and parse accordingly
+                if (createdDate.includes('/')) {
+                    [, month = '', day = '', year = ''] = dateComponents;
+                } else {
+                    [, day = '', month = '', year = ''] = dateComponents;
+                }
+
+                const createdMonth = parseInt(month, 10);
+                const createdYear = parseInt(year, 10);
+
+                if (createdMonth === currentMonth - 1 && createdYear === currentYear) {
+                    lastMonthVipsTotal += 1;
+                    lastMonthPointsFromNewVips += plexusPoints;
+                }
             }
         }
-        if (createdDate) {  // Check if createdDate is defined before splitting
-            const createdDateParts = createdDate.split(/[/-]/);
-            const createdMonth = parseInt(createdDateParts[1], 10);
-            const createdYear = parseInt(createdDateParts[2], 10);
 
-            if (createdYear === currentYear) {
-                orderedLastMonthForRetention[createdMonth] = (orderedLastMonthForRetention[createdMonth] || 0) + plexusPoints;
+        if (createdDate) {
+            let dateComponents;
+            // Check for the date format using a regular expression
+            if (createdDate.includes('/')) {
+                dateComponents = createdDate.match(/(\d+)\/(\d+)\/(\d+)/);
+            } else if (createdDate.includes('-')) {
+                dateComponents = createdDate.match(/(\d+)-(\d+)-(\d+)/);
+            }
+
+            if (dateComponents) {
+                let [, month = '', day = '', year = ''] = dateComponents;
+                // Check if the format is MM/DD/YYYY (with /) or DD-MM-YYYY (with -) and parse accordingly
+                if (createdDate.includes('/')) {
+                    [, month = '', day = '', year = ''] = dateComponents;
+                } else {
+                    [, day = '', month = '', year = ''] = dateComponents;
+                }
+
+                const createdMonth = parseInt(month, 10);
+                const createdYear = parseInt(year, 10);
+
+                if (createdYear === currentYear) {
+                    orderedLastMonthForRetention[createdMonth] = (orderedLastMonthForRetention[createdMonth] || 0) + plexusPoints;
+                }
             }
         }
-
     });
 
     return { lastMonthVipsTotal, lastMonthPointsFromNewVips, orderedLastMonthForRetention };
 };
+
+
+
+
 
 
 const calculatePL100Above = (paidLevel) => {
@@ -502,10 +723,13 @@ const calculatePointsGainedLastMonthWithoutSubs = (data) => {
 
 
 // TopRecruiters Start
-// const calculateTopRecruiters = (data, month) => {
-//     const curMonth = Number(month)
-//     const currentYear = new Date().getFullYear();
 
+
+
+//it is only for "/"
+// const calculateTopRecruiters = (data, month) => {
+//     const curMonth = Number(month);
+//     const currentYear = new Date().getFullYear();
 
 //     // Filter data based on CreatedDate matching the provided month and current year
 //     const filteredData = data.filter((row) => {
@@ -514,17 +738,22 @@ const calculatePointsGainedLastMonthWithoutSubs = (data) => {
 //             return false;
 //         }
 
-//         const [date, rowMonth, year] = createdDate.split(/[/-]/);
-//         return parseInt(rowMonth) === curMonth && parseInt(year) === currentYear;
-//     });
+//         // Modify the regular expression to match dates with "/" and variable day length
+//         const dateComponents = createdDate.match(/(\d+)\/(\d+)\/(\d+)/);
+//         if (!dateComponents) {
+//             return false; // Invalid date format
+//         }
 
+//         const [, month, day, year] = dateComponents;
+//         return parseInt(month) === curMonth && parseInt(year) === currentYear;
+//     });
 
 //     // Count the occurrences of each SponsorName
 //     const sponsorCounts = new Map();
 
 //     filteredData.forEach((row) => {
 //         const level = parseInt(row['Level']);
-//         const sponsorLevel = level - 1
+//         const sponsorLevel = level - 1;
 //         if (sponsorLevel >= 1 && sponsorLevel <= 7) {
 //             const sponsorName = `${row.SponsorFirstName} ${row.SponsorLastName}`;
 //             sponsorCounts.set(sponsorName, (sponsorCounts.get(sponsorName) || 0) + 1);
@@ -536,7 +765,6 @@ const calculatePointsGainedLastMonthWithoutSubs = (data) => {
 
 //     // Sort the topNewVip array in descending order based on TopNewVip
 //     topNewVip.sort((a, b) => b.TopNewVip - a.TopNewVip);
-
 
 //     return topNewVip;
 // };
@@ -552,12 +780,26 @@ const calculateTopRecruiters = (data, month) => {
             return false;
         }
 
-        const dateComponents = createdDate.match(/(\d+)[-/](\d+)[-/](\d+)/);
+        let dateComponents;
+        // Check for the date format using a regular expression
+        if (createdDate.includes('/')) {
+            dateComponents = createdDate.match(/(\d+)\/(\d+)\/(\d+)/);
+        } else if (createdDate.includes('-')) {
+            dateComponents = createdDate.match(/(\d+)-(\d+)-(\d+)/);
+        }
+
         if (!dateComponents) {
             return false; // Invalid date format
         }
 
-        const [, day, month, year] = dateComponents;
+        let day, month, year;
+        // Check if the format is MM/DD/YYYY (with /) or DD-MM-YYYY (with -) and parse accordingly
+        if (createdDate.includes('/')) {
+            [, month = '', day = '', year = ''] = dateComponents;
+        } else {
+            [, day = '', month = '', year = ''] = dateComponents;
+        }
+
         return parseInt(month) === curMonth && parseInt(year) === currentYear;
     });
 
@@ -582,11 +824,19 @@ const calculateTopRecruiters = (data, month) => {
     return topNewVip;
 };
 
+
+
+
+
 // TopRecruiters end
 
 // TopLeadersWithNewAmbassadors Start
+
+//it is for only "/"
+
+
 // const calculateTopLeadersWithNewAmbassadors = (data, month) => {
-//     const curMonth = Number(month)
+//     const curMonth = Number(month);
 //     const currentYear = new Date().getFullYear();
 
 //     // Filter data based on JoinDate matching the current month and year
@@ -598,19 +848,24 @@ const calculateTopRecruiters = (data, month) => {
 //             return false;
 //         }
 
+//         // Modify the regular expression to match dates with "/" and variable day length
+//         const dateComponents = joinDate.match(/(\d+)\/(\d+)\/(\d+)/);
+//         if (!dateComponents) {
+//             return false; // Invalid date format
+//         }
 
-//         const [date, rowMonth, year] = joinDate.split(/[/-]/);
-//         return parseInt(rowMonth) === curMonth && parseInt(year) === currentYear;
+//         const [, month, day, year] = dateComponents;
+//         return parseInt(month) === curMonth && parseInt(year) === currentYear;
 //     });
-//     const newBrandAmbassadors = filteredData.length
-//     const newBrandAmbassadorReport = filteredData
 
+//     const newBrandAmbassadors = filteredData.length;
+//     const newBrandAmbassadorReport = filteredData;
 
 //     const sponsorCounts = new Map();
 
 //     filteredData.forEach((row) => {
 //         const level = parseInt(row['Level']);
-//         const sponsorLevel = level - 1
+//         const sponsorLevel = level - 1;
 //         if (sponsorLevel >= 1 && sponsorLevel <= 7) {
 //             const sponsorName = `${row.SponsorFirstName} ${row.SponsorLastName}`;
 //             sponsorCounts.set(sponsorName, (sponsorCounts.get(sponsorName) || 0) + 1);
@@ -637,12 +892,26 @@ const calculateTopLeadersWithNewAmbassadors = (data, month) => {
             return false;
         }
 
-        const dateComponents = joinDate.match(/(\d+)[-/](\d+)[-/](\d+)/);
+        let dateComponents;
+        // Check for the date format using a regular expression
+        if (joinDate.includes('/')) {
+            dateComponents = joinDate.match(/(\d+)\/(\d+)\/(\d+)/);
+        } else if (joinDate.includes('-')) {
+            dateComponents = joinDate.match(/(\d+)-(\d+)-(\d+)/);
+        }
+
         if (!dateComponents) {
             return false; // Invalid date format
         }
 
-        const [, day, month, year] = dateComponents;
+        let day, month, year;
+        // Check if the format is MM/DD/YYYY (with /) or DD-MM-YYYY (with -) and parse accordingly
+        if (joinDate.includes('/')) {
+            [, month = '', day = '', year = ''] = dateComponents;
+        } else {
+            [, day = '', month = '', year = ''] = dateComponents;
+        }
+
         return parseInt(month) === curMonth && parseInt(year) === currentYear;
     });
 
@@ -667,6 +936,9 @@ const calculateTopLeadersWithNewAmbassadors = (data, month) => {
     return { topNewAmbassadors, newBrandAmbassadors, newBrandAmbassadorReport };
 };
 
+
+
+
 // TopLeadersWithNewAmbassadors end
 
 
@@ -679,6 +951,33 @@ const calculateCurrentPointsData = (data) => {
     return data.filter((row) => parseInt(row.PlexusPointsInOrganization, 10) !== 0 && !isNaN(parseInt(row.PlexusPointsInOrganization, 10)));
 };
 
+// const filterDataForLvl1 = (data) => {
+//     // Filter the data to include only rows with Level > 1, CustomerType as "VIP Customer",
+//     // and JoinDate in the current month and year
+
+//     const currentDate = new Date();
+//     const targetMonth = currentDate.getMonth() + 1; // Get the current month (1 to 12)
+//     const targetYear = currentDate.getFullYear(); // Get the current year
+
+//     return data.filter((row) => {
+//         if (row.CreatedDate) {
+//             // Check if the CreatedDate property exists in the row
+//             const [day, month, year] = row.CreatedDate.split(/[-/]/); // Split the date using either hyphen or slash
+
+//             const createdMonth = parseInt(month, 10); // Parse the month as an integer
+//             const createdYear = parseInt(year, 10);
+
+//             return (
+//                 parseInt(row.Level, 10) === 1 &&
+//                 row.CustomerType === 'VIP Customer' &&
+//                 createdMonth === targetMonth &&
+//                 createdYear === targetYear
+//             );
+//         }
+//         return false; // Skip rows without a valid CreatedDate
+//     });
+// };
+
 const filterDataForLvl1 = (data) => {
     // Filter the data to include only rows with Level > 1, CustomerType as "VIP Customer",
     // and JoinDate in the current month and year
@@ -690,21 +989,67 @@ const filterDataForLvl1 = (data) => {
     return data.filter((row) => {
         if (row.CreatedDate) {
             // Check if the CreatedDate property exists in the row
-            const [day, month, year] = row.CreatedDate.split(/[-/]/); // Split the date using either hyphen or slash
+            let dateComponents;
+            // Check for the date format using a regular expression
+            if (row.CreatedDate.includes('/')) {
+                dateComponents = row.CreatedDate.match(/(\d+)\/(\d+)\/(\d+)/);
+            } else if (row.CreatedDate.includes('-')) {
+                dateComponents = row.CreatedDate.match(/(\d+)-(\d+)-(\d+)/);
+            }
 
-            const createdMonth = parseInt(month, 10); // Parse the month as an integer
-            const createdYear = parseInt(year, 10);
+            if (dateComponents) {
+                let month = '', day = '', year = '';
+                // Check if the format is MM/DD/YYYY (with /) or DD-MM-YYYY (with -) and parse accordingly
+                if (row.CreatedDate.includes('/')) {
+                    [, month, day, year] = dateComponents;
+                } else {
+                    [, day, month, year] = dateComponents;
+                }
 
-            return (
-                parseInt(row.Level, 10) === 1 &&
-                row.CustomerType === 'VIP Customer' &&
-                createdMonth === targetMonth &&
-                createdYear === targetYear
-            );
+                const createdMonth = parseInt(month, 10); // Parse the month as an integer
+                const createdYear = parseInt(year, 10);
+
+                return (
+                    parseInt(row.Level, 10) === 1 &&
+                    row.CustomerType === 'VIP Customer' &&
+                    createdMonth === targetMonth &&
+                    createdYear === targetYear
+                );
+            }
         }
         return false; // Skip rows without a valid CreatedDate
     });
 };
+
+
+
+
+// const filterDataForLvl2 = (data) => {
+//     // Filter the data to include only rows with Level > 1, CustomerType as "VIP Customer",
+//     // and JoinDate in the current month and year
+
+//     const currentDate = new Date();
+//     const targetMonth = currentDate.getMonth() + 1; // Get the current month (1 to 12)
+//     const targetYear = currentDate.getFullYear(); // Get the current year
+
+//     return data.filter((row) => {
+//         if (row.CreatedDate) {
+//             // Check if the CreatedDate property exists in the row
+//             const [day, month, year] = row.CreatedDate.split(/[-/]/); // Split the date using either hyphen or slash
+
+//             const createdMonth = parseInt(month, 10); // Parse the month as an integer
+//             const createdYear = parseInt(year, 10);
+
+//             return (
+//                 parseInt(row.Level, 10) > 1 &&
+//                 row.CustomerType === 'VIP Customer' &&
+//                 createdMonth === targetMonth &&
+//                 createdYear === targetYear
+//             );
+//         }
+//         return false; // Skip rows without a valid CreatedDate
+//     });
+// };
 
 const filterDataForLvl2 = (data) => {
     // Filter the data to include only rows with Level > 1, CustomerType as "VIP Customer",
@@ -717,21 +1062,39 @@ const filterDataForLvl2 = (data) => {
     return data.filter((row) => {
         if (row.CreatedDate) {
             // Check if the CreatedDate property exists in the row
-            const [day, month, year] = row.CreatedDate.split(/[-/]/); // Split the date using either hyphen or slash
+            let dateComponents;
+            // Check for the date format using a regular expression
+            if (row.CreatedDate.includes('/')) {
+                dateComponents = row.CreatedDate.match(/(\d+)\/(\d+)\/(\d+)/);
+            } else if (row.CreatedDate.includes('-')) {
+                dateComponents = row.CreatedDate.match(/(\d+)-(\d+)-(\d+)/);
+            }
 
-            const createdMonth = parseInt(month, 10); // Parse the month as an integer
-            const createdYear = parseInt(year, 10);
+            if (dateComponents) {
+                let month = '', day = '', year = '';
+                // Check if the format is MM/DD/YYYY (with /) or DD-MM-YYYY (with -) and parse accordingly
+                if (row.CreatedDate.includes('/')) {
+                    [, month = '', day = '', year = ''] = dateComponents;
+                } else {
+                    [, day = '', month = '', year = ''] = dateComponents;
+                }
 
-            return (
-                parseInt(row.Level, 10) > 1 &&
-                row.CustomerType === 'VIP Customer' &&
-                createdMonth === targetMonth &&
-                createdYear === targetYear
-            );
+                const createdMonth = parseInt(month, 10); // Parse the month as an integer
+                const createdYear = parseInt(year, 10);
+
+                return (
+                    parseInt(row.Level, 10) > 1 &&
+                    row.CustomerType === 'VIP Customer' &&
+                    createdMonth === targetMonth &&
+                    createdYear === targetYear
+                );
+            }
         }
         return false; // Skip rows without a valid CreatedDate
     });
 };
+
+
 
 const totalPv = (data) => {
     let total = 0;
