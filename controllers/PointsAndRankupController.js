@@ -502,7 +502,7 @@ const lastMonthVips = (data) => {
         const createdDate = item.CreatedDate;
         const customerType = item.CustomerType;
 
-        if (customerType === "VIP Customer") {
+        if (typeof createdDate === 'string') {
             let dateComponents;
             // Check for the date format using a regular expression
             if (createdDate.includes('/')) {
