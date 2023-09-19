@@ -333,7 +333,7 @@ const calculateFullyCompressedPoints = (data) => {
             pointsGainedThisMonthWithoutSubscription += compressedPts;
         }
 
-        if (Level < 8 && customerType === "VIP Customer") {
+        if (Level < 8 ) {
             let dateComponents;
             // Check for the date format using a regular expression
             if (createdDate.includes('/')) {
