@@ -1416,7 +1416,7 @@ export const getForcastingEstimate = catchAsyncError(async (req, res, next) => {
         const userId = req.user.id;
         // Find the PointsAndRankup document for the specified month
         const report = await PointsAndRankup.findOne({ userId, monthNo });
-        const previousMonthReport = await PointsAndRankup.findOne({ monthNo: monthNo - 1 });
+        const previousMonthReport = await PointsAndRankup.findOne({userId, monthNo: monthNo - 1 });
 
         if (!report) {
             return next(new ErrorHandler(`No data found for this month ${monthNo}.`, 404));
