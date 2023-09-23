@@ -2,107 +2,327 @@ import User from "../models/user-model.js"
 import { ErrorHandler } from "../utils/errorHandler.js"
 import { catchAsyncError } from "../middleware/catchAsyncError.js"
 import sendToken from "../utils/sendJwtToken.js"
-// import sendEmail from "../utils/sendEmail.js"
 import crypto from "crypto"
-// import cloudinary from "cloudinary"
-// import mysqlConnection from "../utils/mySqlConfig.js"
 
-export const userRegistration = catchAsyncError(async (req, res, next) => {
-    const { email, password, name, rank } = req.body
-    const user = await User.create({
-        name, email, password, rank
-    })
-    await user.save()
+import stripe from 'stripe';
+const stripeInstance = new stripe("sk_test_51NWOvfKxOSFxtjuosKMsKo6KOraoVqoz8s5Ky4sKA6e4NahYzXiCHtk7CuyrhLvnNILd792BoN9SzUwzh5KE4YO800NyRuVRhE");
 
-    const token = user.getJwtToken()
-    sendToken(user, 201, res)
-})
+
+
 
 // export const userLogin = catchAsyncError(async (req, res, next) => {
-//     const { email, password } = req.body;
-//     let user;
-//     if (!email || !password) {
-//         return next(new ErrorHandler("Please Enter Email and Password Both", 400));
-//     }
-//     else {
-//         user = await User.findOne({ email }).select("+password")
-//         if (user) {
-//             if (user.password === password) {
-//                 sendToken(user, 200, res)
-//             }
-//             else {
-//                 return next(new ErrorHandler("Invaild Email or Password", 400))
-//             }
-//         }
-//         else {
-//             if (password === "12345678") {
-//                 const mysqlQuery = `SELECT * FROM wpi6_users WHERE user_email = '${email}'`;
-//                 mysqlConnection.query(mysqlQuery, async (mysqlError, mysqlResults) => {
-//                     if (mysqlError) {
-//                         return next(new ErrorHandler("Error fetching user from MySQL", 500));
-//                     }
+//     const { email, password } = req.body
 
-//                     if (mysqlResults.length === 0) {
-//                         return next(new ErrorHandler("User not found in MySQL", 401));
-//                     }
-//                     // Assuming mysqlResults contains user data from MySQL
-//                     const userFromMySQL = mysqlResults[0];
-//                     user = await User.findOne({ email: userFromMySQL.user_email });
-//                     if (!user) {
-//                         // If the user doesn't exist in MongoDB, save them with a default password
-//                         const newUser = new User({
-//                             email: userFromMySQL.user_email,
-//                             password: '12345678' // Default password
+//     if (!email || !password) {
+//         return next(new ErrorHandler("Please Enter Email and Password Both", 400))
+//     }
+
+//     const user = await User.findOne({ email }).select("+password")
+
+//     if (!user) {
+//         // Check if the email exists in Stripe transactions
+//         try {
+//             const stripeCustomers = await stripeInstance.customers.list({ email: email });
+//             if (stripeCustomers && stripeCustomers.data.length > 0) {
+
+//                 const stripeCustomer = stripeCustomers.data[0];
+//                 const customerPayments = await stripeInstance.paymentIntents.list({
+//                     customer: stripeCustomer.id,
+//                 });
+//                 console.log(customerPayments)
+//                 const newUser = new User({ email, password: "1234" });
+//                 await newUser.save();
+//                 console.log("hey")
+//                 sendToken(newUser, 200, res);
+//             } else {
+//                 return next(new ErrorHandler("Invalid Email or Password", 401));
+//             }
+//         } catch (error) {
+//             // Handle any Stripe API errors here
+//             return next(new ErrorHandler("Error communicating with Stripe", 500));
+//         }
+//     } else {
+//         if (user.password !== password) {
+//             return next(new ErrorHandler("Invalid Email or Password", 400))
+//         }
+
+//         sendToken(user, 200, res);
+//     }
+// })
+
+
+
+
+// export const userLogin = catchAsyncError(async (req, res, next) => {
+//     const { email, password } = req.body
+
+//     if (!email || !password) {
+//         return next(new ErrorHandler("Please Enter Email and Password Both", 400))
+//     }
+
+//     // First, check if the user exists in your MongoDB database
+//     const user = await User.findOne({ email }).select("+password")
+
+//     if (user) {
+//         // If the user is found in MongoDB, check their password
+//         if (user.password === password) {
+//             const currentDate = new Date();
+//             const transactionDate = user.transactionDate;
+//             // Calculate the difference in days
+//             const daysDifference = Math.floor(
+//                 (currentDate - transactionDate) / (1000 * 60 * 60 * 24)
+//             );
+
+//             if (daysDifference <= 30) {
+//                 // If the transaction is within 30 days, log in
+//                 sendToken(user, 200, res);
+//             } else {
+//                 // If the transaction is older than 30 days, check Stripe transactions
+//                 try {
+//                     const stripeCustomers = await stripeInstance.customers.list({ email: email });
+//                     if (stripeCustomers && stripeCustomers.data.length > 0) {
+//                         const stripeCustomer = stripeCustomers.data[0];
+
+//                         // Check the latest transaction date in Stripe
+//                         const customerPayments = await stripeInstance.paymentIntents.list({
+//                             customer: stripeCustomer.id,
 //                         });
 
-//                         await newUser.save();
-//                         const token = await newUser.getJwtToken()
-//                         res.status(201).cookie(token).json({
-//                             success: true,
-//                             user: newUser,
-//                             token
-//                         })
+//                         if (customerPayments && customerPayments.data.length > 0) {
+//                             const latestPayment = customerPayments.data[0];
+//                             const stripeTransactionDate = new Date(latestPayment.created * 1000);
+
+//                             // Calculate the difference in days
+//                             const stripeDaysDifference = Math.floor(
+//                                 (currentDate - stripeTransactionDate) / (1000 * 60 * 60 * 24)
+//                             );
+
+//                             if (stripeDaysDifference <= 30) {
+//                                 // Update the user's transactionDate in MongoDB
+//                                 user.transactionDate = stripeTransactionDate;
+//                                 await user.save();
+
+//                                 // Log in the user
+//                                 sendToken(user, 200, res);
+//                             } else {
+//                                 // If the latest Stripe transaction is also older than 30 days, prompt the user to update their password
+//                                 return next(new ErrorHandler("Password update required", 401));
+//                             }
+//                         } else {
+//                             return next(new ErrorHandler("No payment history found in Stripe", 401));
+//                         }
+//                     } else {
+//                         return next(new ErrorHandler("Invalid Email or Password", 401));
 //                     }
-
-//                 });
+//                 } catch (error) {
+//                     // Handle any Stripe API errors here
+//                     return next(new ErrorHandler("Error communicating with Stripe", 500));
+//                 }
 //             }
-//             else {
-//                 return next(new ErrorHandler("Invaild Email or Password", 400))
-//             }
-
+//         } else {
+//             return next(new ErrorHandler("Invalid Email or Password", 400))
 //         }
+//     } else {
+//         // If the user is not found in MongoDB, check in Stripe transactions as before
+//         try {
+//             const stripeCustomers = await stripeInstance.customers.list({ email: email });
+//             if (stripeCustomers && stripeCustomers.data.length > 0) {
+//                 const stripeCustomer = stripeCustomers.data[0];
 
+//                 // Check the latest transaction date in Stripe
+//                 const customerPayments = await stripeInstance.paymentIntents.list({
+//                     customer: stripeCustomer.id,
+//                 });
+
+//                 if (customerPayments && customerPayments.data.length > 0) {
+//                     const latestPayment = customerPayments.data[0];
+//                     const currentDate = new Date();
+//                     const stripeTransactionDate = new Date(latestPayment.created * 1000);
+//                     // Calculate the difference in days
+//                     const stripeDaysDifference = Math.floor(
+//                         (currentDate - stripeTransactionDate) / (1000 * 60 * 60 * 24)
+//                     );
+
+//                     if (stripeDaysDifference <= 30) {
+//                         // Log in with Stripe data and update transactionDate in MongoDB
+//                         const newUser = new User({
+//                             email,
+//                             password: "1234", // Reset password to "1234"
+//                             transactionDate: stripeTransactionDate, // Update transaction date
+//                         });
+//                         await newUser.save();
+//                         sendToken(newUser, 200, res);
+//                     } else {
+//                         // If the latest Stripe transaction is older than 30 days, prompt the user to update their password
+//                         return next(new ErrorHandler("Password update required", 401));
+//                     }
+//                 } else {
+//                     return next(new ErrorHandler("No payment history found in Stripe", 401));
+//                 }
+//             } else {
+//                 return next(new ErrorHandler("Invalid Email or Password", 401));
+//             }
+//         } catch (error) {
+//             // Handle any Stripe API errors here
+//             return next(new ErrorHandler("Error communicating with Stripe", 500));
+//         }
 //     }
-
-
-
-//     // Assuming you have a MySQL connection
-
-
 // });
 
 
 export const userLogin = catchAsyncError(async (req, res, next) => {
-    const { email, password } = req.body
-    // checking if user gave email and password both
+
+    const { email, password } = req.body;
+
+
 
     if (!email || !password) {
-        return next(new ErrorHandler("Please Enter Email and Password Both", 400))
-    }
-    const user = await User.findOne({ email }).select("+password")
-
-    if (!user) {
-        return next(new ErrorHandler("Invaild Email or Password", 401))
+        return next(new ErrorHandler("Please Enter Email and Password Both", 400));
     }
 
 
-    if (!user.password === password) {
-        return next(new ErrorHandler("Invaild Email or Password", 400))
+    if (email === "cs@theanalyticaladvantage.com") {
+        const user = await User.findOne({ email }).select("+password");
+
+        if (user) {
+            if (user.password === password) {
+                sendToken(user, 200, res);
+            } else {
+                return next(new ErrorHandler("Invalid Email or Password", 401));
+            }
+        } else {
+            if (password === "12345678") {
+                const newUser = new User({
+                    email,
+                    password: "12345678",
+                    role: "admin"
+                });
+                await newUser.save();
+                sendToken(newUser, 200, res);
+            } else {
+                return next(new ErrorHandler("Invalid Email or Password", 401));
+            }
+        }
     }
 
-    sendToken(user, 200, res)
+    // First, check if the user exists in your MongoDB database
+    const user = await User.findOne({ email }).select("+password");
 
-})
+    if (user) {
+        if (user.password === password) {
+            const currentDate = new Date();
+            const transactionDate = user.transactionDate;
+            const daysDifference = Math.floor(
+                (currentDate - transactionDate) / (1000 * 60 * 60 * 24)
+            );
+
+            if (daysDifference <= 30) {
+                // If the transaction is within 30 days, log in
+                sendToken(user, 200, res);
+            } else {
+                // If the transaction is older than 30 days, check Stripe transactions
+                try {
+                    const stripeCustomers = await stripeInstance.customers.list({ email: email });
+                    if (stripeCustomers && stripeCustomers.data.length > 0) {
+                        const stripeCustomer = stripeCustomers.data[0];
+
+                        // Check the latest transaction in Stripe
+                        const customerPayments = await stripeInstance.paymentIntents.list({
+                            customer: stripeCustomer.id,
+                            limit: 1, // Limit to the latest payment
+                        });
+
+                        if (
+                            customerPayments &&
+                            customerPayments.data.length > 0 &&
+                            customerPayments.data[0].status === "succeeded"
+                        ) {
+                            const latestPayment = customerPayments.data[0];
+                            const stripeTransactionDate = new Date(latestPayment.created * 1000);
+                            const stripeDaysDifference = Math.floor(
+                                (currentDate - stripeTransactionDate) / (1000 * 60 * 60 * 24)
+                            );
+
+                            if (stripeDaysDifference <= 30) {
+                                // Update the user's transactionDate in MongoDB
+                                user.transactionDate = stripeTransactionDate;
+                                await user.save();
+
+                                // Log in the user
+                                sendToken(user, 200, res);
+                            } else {
+                                return next(new ErrorHandler("Password update required", 401));
+                            }
+                        } else {
+                            return next(new ErrorHandler("No successful payment history found in Stripe", 401));
+                        }
+                    } else {
+                        return next(new ErrorHandler("Invalid Email or Password", 401));
+                    }
+                } catch (error) {
+                    return next(new ErrorHandler("Error communicating with Stripe", 500));
+                }
+            }
+        } else {
+            return next(new ErrorHandler("Invalid Email or Password", 400));
+        }
+    } else {
+        // If the user is not found in MongoDB, check in Stripe transactions as before
+        try {
+            const stripeCustomers = await stripeInstance.customers.list({ email: email });
+            if (stripeCustomers && stripeCustomers.data.length > 0) {
+                const stripeCustomer = stripeCustomers.data[0];
+                const stripeName = stripeCustomer.name
+                // Check the latest transaction in Stripe
+                const customerPayments = await stripeInstance.paymentIntents.list({
+                    customer: stripeCustomer.id,
+                    limit: 1, // Limit to the latest payment
+                });
+
+                if (
+                    customerPayments &&
+                    customerPayments.data.length > 0 &&
+                    customerPayments.data[0].status === "succeeded"
+                ) {
+                    const currentDate = new Date();
+                    const latestPayment = customerPayments.data[0];
+                    const stripeTransactionDate = new Date(latestPayment.created * 1000);
+                    const stripeCurrentPlan = latestPayment.description;
+                    const stripeTransactionId = latestPayment.id;
+                    const stripeCurrency = latestPayment.currency
+                    const stripeAmount = latestPayment.amount
+                    const stripeDaysDifference = Math.floor(
+                        (currentDate - stripeTransactionDate) / (1000 * 60 * 60 * 24)
+                    );
+
+                    if (stripeDaysDifference <= 30) {
+                        // Log in with Stripe data and update transactionDate in MongoDB
+                        const newUser = new User({
+                            name: stripeName,
+                            email,
+                            password: "12345678", // Reset password to "12345678"
+                            transactionDate: stripeTransactionDate, // Update transaction date
+                            plan: stripeCurrentPlan,
+                            transactionId: stripeTransactionId,
+                            currency: stripeCurrency,
+                            amount: stripeAmount
+                        });
+                        await newUser.save();
+                        sendToken(newUser, 200, res);
+                    } else {
+                        return next(new ErrorHandler("Password update required", 401));
+                    }
+                } else {
+                    return next(new ErrorHandler("No successful payment history found in Stripe", 401));
+                }
+            } else {
+                return next(new ErrorHandler("Invalid Email or Password", 401));
+            }
+        } catch (error) {
+            return next(new ErrorHandler("Error communicating with Stripe", 500));
+        }
+    }
+});
 
 export const getAllUsersOfMySql = catchAsyncError(async (req, res, next) => {
     const mysqlQuery = "SELECT * FROM wpi6_users"; // Change the query based on your table structure
