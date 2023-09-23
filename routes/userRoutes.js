@@ -1,12 +1,11 @@
 import { Router } from "express";
-import { deleteUser, forgetPassword, getAllUsers, getAllUsersOfMySql, getSingleUser, getUserDetails, resetPassword, updatePassword, updateProfile, updateUserRole, userLogin, userLoginByAdmin, userLogout, userRegistration } from "../controllers/user-controllers.js"
+import { deleteUser, forgetPassword, getAllUsers, getAllUsersOfMySql, getSingleUser, getUserDetails, resetPassword, updatePassword, updateProfile, updateUserRole, userLogin, userLoginByAdmin, userLogout } from "../controllers/user-controllers.js"
 import { isAuthenticatedUser, userRole } from "../middleware/auth.js";
 const userRoutes = Router()
 
 userRoutes.get("/",(req,res)=>{
     res.send("hello")
 })
-userRoutes.post("/register",userRegistration)
 userRoutes.post("/login",userLogin)
 userRoutes.post("/logout",userLogout)
 userRoutes.post("/password/forget",forgetPassword)               //link bej denge
