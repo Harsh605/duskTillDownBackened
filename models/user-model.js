@@ -38,7 +38,18 @@ const userSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
-
+    transactionDate:{
+        type: Date,
+    },
+    transactionId:{
+        type: String,
+    },
+    amount:{
+        type: String
+    },
+    currency:{
+        type: String
+    },
     resetPasswordToken: String,
     resetPasswordExpire: Date,
 })
